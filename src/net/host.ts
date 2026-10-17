@@ -205,6 +205,9 @@ class HostLink {
       case 'back':
         p.back(pid, String(msg.id));
         break;
+      case 'video':
+        p.video(pid, msg.videoId ? String(msg.videoId) : null, msg.list ? String(msg.list) : undefined);
+        break;
       case 'reply':
         p.reply(pid, msg.wakeId, { seatIds: msg.seatIds, roleIds: msg.roleIds, answer: msg.answer });
         break;
@@ -235,7 +238,7 @@ class HostLink {
     try {
       if (pubJson !== meta.sentPublic) {
         meta.sentPublic = pubJson;
-        link.send({ t: 'state', s: pub });
+        link.send({ t: 'state', s: pub, now: Date.now() });
       }
       const priv = toPrivate(g, meta.playerId);
       const privJson = JSON.stringify(priv);

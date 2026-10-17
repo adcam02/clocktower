@@ -1,4 +1,12 @@
-import { CORE_TEAMS, composition, genericIcon, TEAM_LABEL } from '../data';
+import { CORE_TEAMS, composition, genericIcon, TEAM_LABEL, TEAM_SINGULAR } from '../data';
+
+/** What each kind of character is, for people new to the game. */
+const TEAM_HINT: Record<string, string> = {
+  townsfolk: 'good players with helpful abilities',
+  outsider: 'good players whose abilities get in the way',
+  minion: 'evil players who help the Demon',
+  demon: 'the evil killer. Good wins by executing them',
+};
 import { majorityOf, st } from '../state/host';
 import { useView, type View } from '../state/view';
 import { Icon } from './Icon';
@@ -19,14 +27,14 @@ function DialFace({ numerals }: { numerals: boolean }) {
       </defs>
       <circle cx="100" cy="100" r="98" fill="url(#dial-fill)" />
       <circle cx="100" cy="100" r="98" className="ring outer" />
-      <circle cx="100" cy="100" r="94.5" className="ring" />
+      <circle cx="100" cy="100" r="95.5" className="ring" />
       {Array.from({ length: 60 }, (_, i) => (
         <line
           key={i}
           x1="100"
-          y1={i % 5 === 0 ? 7.5 : 8.5}
+          y1={i % 5 === 0 ? 5 : 5.5}
           x2="100"
-          y2={i % 5 === 0 ? 14 : 11}
+          y2={i % 5 === 0 ? 9.5 : 7.5}
           className={i % 5 === 0 ? 'tick major' : 'tick'}
           transform={`rotate(${i * 6} 100 100)`}
         />
@@ -35,12 +43,12 @@ function DialFace({ numerals }: { numerals: boolean }) {
         NUMERALS.map((n, i) => {
           const a = ((i * 30 - 90) * Math.PI) / 180;
           return (
-            <text key={n} x={100 + Math.cos(a) * 80} y={100 + Math.sin(a) * 80 + 3} className="numeral" textAnchor="middle">
+            <text key={n} x={100 + Math.cos(a) * 87.5} y={100 + Math.sin(a) * 87.5 + 2.6} className="numeral" textAnchor="middle">
               {n}
             </text>
           );
         })}
-      <circle cx="100" cy="100" r={numerals ? 70 : 84} className="ring inner" />
+      <circle cx="100" cy="100" r={numerals ? 81 : 89} className="ring inner" />
     </svg>
   );
 }
@@ -200,24 +208,38 @@ function Stats() {
           <span>votes</span>
         </div>
       </div>
-      <div className="dial-comp">
-        {comp ? (
-          CORE_TEAMS.map((team) => (
-            <span key={team} className={`comp comp-${team}`} title={`${comp[team as keyof typeof comp]} ${TEAM_LABEL[team]}`}>
-              <img src={genericIcon(team)} alt="" />
-              <b>{comp[team as keyof typeof comp]}</b>
+      {comp ? (
+        <div className="dial-comp">
+          {(['good', 'evil'] as const).map((side) => (
+            <div key={side} className={`comp-side ${side}`}>
+              <span className="comp-side-label">{side === 'good' ? 'Good' : 'Evil'}</span>
+              <div className="comp-teams">
+                {CORE_TEAMS.filter((t) => (side === 'good') === (t === 'townsfolk' || t === 'outsider')).map((team) => {
+                  const n = comp[team as keyof typeof comp];
+                  return (
+                    <span key={team} className={`comp comp-${team}`} title={`${n} ${n === 1 ? TEAM_SINGULAR[team] : TEAM_LABEL[team]}: ${TEAM_HINT[team]}`}>
+                      <img src={genericIcon(team)} alt="" />
+                      <b>{n}</b>
+                      <small>{n === 1 ? TEAM_SINGULAR[team] : TEAM_LABEL[team]}</small>
+                    </span>
+                  );
+                })}
+              </div>
+            </div>
+          ))}
+          {travellers > 0 && (
+            <span className="comp comp-traveller" title="Travellers join part-way through and their characters are public">
+              <img src={genericIcon('traveller')} alt="" />
+              <b>+{travellers}</b>
+              <small>{travellers === 1 ? 'Traveller' : 'Travellers'}</small>
             </span>
-          ))
-        ) : (
+          )}
+        </div>
+      ) : (
+        <div className="dial-comp">
           <span className="comp-note">Needs 5 to 20 players</span>
-        )}
-        {travellers > 0 && (
-          <span className="comp comp-traveller" title={`${travellers} Travellers`}>
-            <img src={genericIcon('traveller')} alt="" />
-            <b>+{travellers}</b>
-          </span>
-        )}
-      </div>
+        </div>
+      )}
       {marked && (
         <div className={`dial-block ${outlook?.state ?? ''}`}>
           <span>

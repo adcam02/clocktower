@@ -33,7 +33,7 @@ export function Journal() {
   const priv = useClient((s) => s.priv);
   const log = [...(priv?.log ?? [])].reverse();
   const replies = priv?.replies ?? [];
-  if (!log.length) return <p className="char-empty">Nothing yet. When the Storyteller wakes you, what they show you is kept here.</p>;
+  if (!log.length) return <p className="char-empty">Nothing yet. Whenever the Storyteller wakes you, what they show you is kept here.</p>;
   return (
     <ol className="journal">
       {log.map((w) => (

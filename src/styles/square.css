@@ -385,7 +385,7 @@
 }
 .dial-face .numeral {
   font-family: var(--font-caps);
-  font-size: 10px;
+  font-size: 8.5px;
   fill: var(--brass);
   fill-opacity: 0.55;
   letter-spacing: 0.05em;
@@ -396,10 +396,10 @@
   justify-items: center;
   gap: calc(var(--d) * 0.035);
   text-align: center;
-  width: calc(var(--d) * 0.6);
+  width: calc(var(--d) * 0.7);
 }
 .dial-content.snug .stats {
-  width: calc(var(--d) * 0.78);
+  width: calc(var(--d) * 0.84);
 }
 .dial-phase {
   font-family: var(--font-black);
@@ -443,23 +443,61 @@
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
-  gap: clamp(2px, calc(var(--d) * 0.014), 8px);
+  align-items: flex-start;
+  gap: 4px clamp(8px, calc(var(--d) * 0.04), 16px);
   padding-top: calc(var(--d) * 0.03);
   border-top: 1px solid var(--line);
 }
+.comp-side {
+  display: grid;
+  justify-items: center;
+  gap: 1px;
+}
+.comp-side + .comp-side {
+  padding-left: clamp(8px, calc(var(--d) * 0.04), 16px);
+  border-left: 1px solid var(--line);
+}
+.comp-side-label {
+  font-family: var(--font-caps);
+  font-size: clamp(10px, calc(var(--d) * 0.033), 13px);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+.comp-side.good .comp-side-label {
+  color: var(--good-hi);
+}
+.comp-side.evil .comp-side-label {
+  color: var(--evil-hi);
+}
+.comp-teams {
+  display: flex;
+  gap: clamp(4px, calc(var(--d) * 0.025), 10px);
+}
 .comp {
-  display: inline-flex;
+  display: grid;
+  grid-template-columns: auto auto;
+  grid-template-rows: auto auto;
   align-items: center;
-  gap: 2px;
+  justify-items: center;
+  column-gap: 1px;
+  cursor: help;
 }
 .comp img {
-  width: clamp(20px, calc(var(--d) * 0.08), 34px);
-  height: clamp(20px, calc(var(--d) * 0.08), 34px);
+  width: clamp(20px, calc(var(--d) * 0.075), 32px);
+  height: clamp(20px, calc(var(--d) * 0.075), 32px);
   object-fit: contain;
 }
 .comp b {
   font-weight: 400;
   font-size: clamp(15px, calc(var(--d) * 0.056), 23px);
+}
+.comp small {
+  grid-column: 1 / -1;
+  font-family: var(--font-caps);
+  font-size: clamp(9px, calc(var(--d) * 0.03), 12px);
+  line-height: 1;
+  color: var(--text-dim);
+  letter-spacing: 0.02em;
 }
 .comp-townsfolk b,
 .comp-outsider b {
@@ -807,4 +845,33 @@
 .seat-dawn svg {
   width: 12px;
   height: 12px;
+}
+.dial-content.snug .comp-side + .comp-side {
+  padding-left: 0;
+  border-left: 0;
+}
+
+/* Name above the token for seats across the top of the circle. */
+.seat.plate-above .seat-plate {
+  top: auto;
+  bottom: calc(var(--t) * 0.5 + 4px);
+}
+.seat.plate-above .seat-dawn {
+  top: calc(var(--t) * 0.5 + 4px);
+}
+.dial-content.snug .dial-comp {
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+}
+.dial-content.snug .comp-side {
+  grid-template-columns: auto auto;
+  align-items: center;
+  column-gap: 6px;
+}
+.dial-content.snug .comp-side-label {
+  font-size: 9.5px;
+}
+.dial-content.snug .dial-phase {
+  font-size: clamp(26px, calc(var(--d) * 0.15), 40px);
 }

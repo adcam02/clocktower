@@ -21,7 +21,7 @@ export function SidePanel() {
     { id: 'history', label: view.mode === 'st' ? 'Log' : 'Votes' },
   ];
   const active = view.mode === 'player' || tabs.some((t) => t.id === panel) ? panel : 'reference';
-  const titles: Record<string, string> = { reference: 'Characters', notes: 'Notepad', journal: 'Journal', history: 'Votes' };
+  const titles: Record<string, string> = { reference: 'Characters', notes: 'Notepad', journal: 'What the Storyteller showed you', history: 'Votes' };
   return (
     <aside className="side-panel surface" aria-label="Side panel">
       <header className="side-head">

@@ -59,6 +59,7 @@ function freshGame(prev?: GameState, keepPlayers = true): GameState {
     marked: null,
     history: [],
     townHall: null,
+    nightVideo: null,
     nightDeaths: [],
     awake: {},
     wakes: [],
@@ -75,6 +76,7 @@ function loadGame(): GameState | null {
   }
   g.townHall ??= null;
   g.nightDeaths ??= [];
+  g.nightVideo ??= null;
   setCustomRoles(g.script.custom);
   return g;
 }
@@ -147,6 +149,7 @@ export function toPublic(g: GameState, online: Set<string>): PublicState {
     marked: g.marked,
     history: g.history,
     townHall: g.townHall,
+    nightVideo: g.nightVideo,
   };
 }
 
@@ -505,6 +508,7 @@ export const st = {
       g.nightDone = [];
       g.townHall = null;
       g.nightDeaths = [];
+      g.nightVideo = null;
       if (phase === 'day') g.awake = {};
     });
   },
@@ -690,6 +694,17 @@ export const st = {
     vote(playerId: string, up: boolean) {
       const s = hostGame().seats.find((x) => x.playerId === playerId);
       if (s) st.setVote(s.id, up);
+    },
+    /** Any seated player can put on (or turn off) the night's video, at night only. */
+    video(playerId: string, videoId: string | null, list?: string) {
+      update((g) => {
+        const s = g.seats.find((x) => x.playerId === playerId);
+        if (!s || g.phase !== 'night') return;
+        if (!videoId) g.nightVideo = null;
+        else if (/^[\w-]{11}$/.test(videoId)) {
+          g.nightVideo = { videoId, list: list && /^[\w-]{10,64}$/.test(list) ? list : undefined, startedAt: Date.now(), by: s.id };
+        }
+      });
     },
     back(playerId: string, id: string) {
       update((g) => {

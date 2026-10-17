@@ -10,9 +10,11 @@ interface ClientState {
   status: LinkStatus;
   pub: PublicState | null;
   priv: PrivateState | null;
+  /** The Storyteller's clock minus ours, to keep a shared video in step. */
+  clockOffset: number;
 }
 
-export const useClient = create<ClientState>(() => ({ status: 'starting', pub: null, priv: null }));
+export const useClient = create<ClientState>(() => ({ status: 'starting', pub: null, priv: null, clockOffset: 0 }));
 
 export function playerId(): string {
   let id = loadJSON<string | null>('clocktower:player-id', null);
@@ -164,7 +166,7 @@ class ClientLink {
   private receive(msg: HostMessage) {
     if (msg.t === 'state') {
       setCustomRoles(msg.s.script.custom);
-      useClient.setState({ pub: msg.s });
+      useClient.setState(msg.now ? { pub: msg.s, clockOffset: msg.now - Date.now() } : { pub: msg.s });
     } else if (msg.t === 'private') {
       useClient.setState({ priv: msg.p });
     }
@@ -198,6 +200,7 @@ export const player = {
   vote: (up: boolean) => clientLink.send({ t: 'vote', up }),
   ack: (wakeId: string) => clientLink.send({ t: 'ack', wakeId }),
   back: (id: string) => clientLink.send({ t: 'back', id }),
+  video: (videoId: string | null, list?: string) => clientLink.send({ t: 'video', videoId, list }),
   reply: (wakeId: string, r: { seatIds?: string[]; roleIds?: string[]; answer?: boolean }) =>
     clientLink.send({ t: 'reply', wakeId, ...r }),
 };

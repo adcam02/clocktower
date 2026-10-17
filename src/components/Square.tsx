@@ -64,7 +64,7 @@ export function layout(w: number, h: number, n: number): Geometry {
     while (k < samples && cum[k + 1] < target) k++;
     pts.push(at(k));
   }
-  const dial = clamp(Math.min(rx, ry) * 2 - t * 1.25, 150, 420);
+  const dial = clamp(2 * Math.min(ry - t * 0.5 - 10, rx - t * 0.5 - 10), 150, 520);
   return { w, h, cx, cy, rx, ry, t, dial, pts };
 }
 
@@ -210,6 +210,8 @@ function SeatSpot({ seat, geo, i }: { seat: SeatView; geo: Geometry; i: number }
         pick && pickValid(pick, seat) && 'is-pickable',
         menuSeat === seat.id && 'is-open',
         !seat.claimed && 'is-unclaimed',
+        // Seats across the top put their name above the token, leaving the middle to the clock.
+        pt.y < geo.cy - geo.ry * 0.5 && 'plate-above',
       ]
         .filter(Boolean)
         .join(' ')}

@@ -96,6 +96,7 @@ export function TopBar() {
           <ToolButton icon="bag" label="Bag" onClick={() => ui.open({ kind: 'bag' })} />
           <ToolButton icon="wake" label="Wake" badge={awake} onClick={() => ui.wake(useUI.getState().draft.to)} />
           <HallButton />
+          <span className="tool-sep" aria-hidden="true" />
           <ToolButton icon="book" label="Characters" active={panel === 'reference'} onClick={toggle('reference')} />
           <ToolButton icon="vote" label="Votes" active={panel === 'history'} onClick={toggle('history')} />
           <ToolButton

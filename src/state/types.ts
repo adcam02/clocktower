@@ -105,6 +105,15 @@ export interface AwakeState {
   seen: boolean;
 }
 
+/** A YouTube video players watch together while they wait out the night. */
+export interface NightVideo {
+  videoId: string;
+  list?: string;
+  /** When it started, by the Storyteller's clock, so late joiners start where everyone else is. */
+  startedAt: number;
+  by: string | null;
+}
+
 /** The Storyteller calling everyone back from their private chats. */
 export interface TownHall {
   id: string;
@@ -131,6 +140,7 @@ export interface GameState {
   marked: { seatId: string; votes: number } | null;
   history: VoteRecord[];
   townHall: TownHall | null;
+  nightVideo: NightVideo | null;
   /** Seats killed during this night. Players don't see these deaths until the day begins. */
   nightDeaths: string[];
   awake: Record<string, AwakeState>;
@@ -166,6 +176,7 @@ export interface PublicState {
   marked: { seatId: string; votes: number } | null;
   history: VoteRecord[];
   townHall: TownHall | null;
+  nightVideo: NightVideo | null;
 }
 
 export interface PrivateState {
@@ -183,7 +194,7 @@ export interface PrivateState {
 // ---------------------------------------------------------------- messages
 
 export type HostMessage =
-  | { t: 'state'; s: PublicState }
+  | { t: 'state'; s: PublicState; now?: number }
   | { t: 'private'; p: PrivateState }
   | { t: 'pong' }
   | { t: 'host' }
@@ -199,4 +210,5 @@ export type ClientMessage =
   | { t: 'reply'; wakeId: string; seatIds?: string[]; roleIds?: string[]; answer?: boolean }
   | { t: 'sleep' }
   | { t: 'back'; id: string }
+  | { t: 'video'; videoId: string | null; list?: string }
   | { t: 'ping' };

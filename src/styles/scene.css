@@ -177,8 +177,9 @@
   }
 }
 
+/* A dim, distant clock: atmosphere, not something to look at over the seats. */
 .clock-face {
-  fill: #f6cf7c;
+  fill: #a8884a;
   transition: fill var(--t);
 }
 .is-day .clock-face {
@@ -190,6 +191,7 @@
   stroke-width: 4;
 }
 .clock-glow {
+  opacity: 0.35;
   transition: opacity var(--t);
 }
 .is-day .clock-glow {

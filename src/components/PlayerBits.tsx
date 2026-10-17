@@ -103,7 +103,7 @@ export function PlayerRail() {
     },
     { key: 'reference', icon: 'book', label: 'Characters', on: panel === 'reference', action: open('reference') },
     { key: 'notes', icon: 'notepad', label: 'Notepad', on: panel === 'notes', action: open('notes') },
-    { key: 'journal', icon: 'feather', label: 'Journal', on: panel === 'journal', action: open('journal') },
+    { key: 'journal', icon: 'scroll', label: 'Storyteller info', on: panel === 'journal', action: open('journal') },
     { key: 'history', icon: 'vote', label: 'Votes', on: panel === 'history', action: open('history') },
     { key: 'sound', icon: muted ? 'mute' : 'volume', label: muted ? 'Sound off' : 'Sound on', action: () => useUI.setState({ muted: !muted }) },
     { key: 'settings', icon: 'cog', label: 'Settings', action: () => ui.open({ kind: 'settings' }) },

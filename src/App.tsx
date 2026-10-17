@@ -10,6 +10,7 @@ import { PickBanner } from './components/PickBanner';
 import { MyCharacter, PlayerRail, VoteBar } from './components/PlayerBits';
 import { WakeOverlay } from './components/WakeOverlay';
 import { TownHallCall } from './components/TownHall';
+import { NightLounge } from './components/NightLounge';
 import { Landing } from './components/Landing';
 import { useEffects } from './lib/effects';
 import { clientLink, useClient } from './net/client';
@@ -127,6 +128,7 @@ function Player({ room }: { room: string }) {
           <PlayerRail />
           <VoteBar />
           <Modals />
+          <NightLounge />
           <WakeOverlay />
           <TownHallCall />
           <Toasts />

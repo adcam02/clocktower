@@ -165,10 +165,12 @@ export const Scene = memo(function Scene({ phase }: { phase: Phase | 'dusk' }) {
     const mid = skyline(23, -60, 1680, 50, 150, 40, 0.4);
     const nearLeft = skyline(37, -40, 400, 110, 230, 6, 0.55);
     const nearRight = skyline(41, 1240, 1660, 110, 230, 6, 0.55);
+    // Low cottages along the bottom, so the town doesn't stop dead either side of the square.
+    const nearMid = skyline(53, 380, 1260, 34, 86, 18, 0.45);
     return {
       far,
       mid,
-      near: { d: nearLeft.d + nearRight.d, windows: [...nearLeft.windows, ...nearRight.windows] },
+      near: { d: nearLeft.d + nearMid.d + nearRight.d, windows: [...nearLeft.windows, ...nearMid.windows, ...nearRight.windows] },
       tower: clocktower(),
       church: church(),
       trees: trees(5, [
