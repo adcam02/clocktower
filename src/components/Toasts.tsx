@@ -6,7 +6,7 @@ export function Toasts() {
   return (
     <>
       {banner && (
-        <div className="phase-banner" key={banner.key} aria-live="polite">
+        <div className={`phase-banner ${banner.text.length > 12 ? 'long' : ''}`} key={banner.key} aria-live="polite">
           <span className="phase-banner-text">{banner.text}</span>
           {banner.sub && <span className="phase-banner-sub">{banner.sub}</span>}
         </div>

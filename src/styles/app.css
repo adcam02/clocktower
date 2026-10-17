@@ -216,7 +216,7 @@
   line-height: 18px;
 }
 
-@media (max-width: 1180px) {
+@media (max-width: 1340px) {
   .tool span {
     display: none;
   }
@@ -437,7 +437,7 @@ button.my-card:hover {
 .toasts {
   position: absolute;
   right: 16px;
-  bottom: 16px;
+  top: 76px;
   z-index: 90;
   display: grid;
   gap: 8px;
@@ -459,7 +459,7 @@ button.my-card:hover {
 @keyframes toast {
   0% {
     opacity: 0;
-    transform: translateY(12px);
+    transform: translateY(-10px);
   }
   8%,
   88% {
@@ -491,6 +491,11 @@ button.my-card:hover {
   text-shadow:
     0 4px 0 rgba(0, 0, 0, 0.5),
     0 0 60px rgba(240, 212, 143, 0.35);
+}
+.phase-banner.long .phase-banner-text {
+  font-size: clamp(40px, 6.5vw, 92px);
+  max-width: 90vw;
+  text-align: center;
 }
 .phase-banner-sub {
   font-family: var(--font-caps);
@@ -737,9 +742,6 @@ button.my-card:hover {
   .vote-q {
     font-size: 16px;
   }
-}
-.app:has(.vote-bar) .toasts {
-  bottom: 96px;
 }
 .vote-bar.my-turn {
   border-color: var(--brass-hi);
@@ -1044,6 +1046,15 @@ button.my-card:hover {
 .mode-player .vote-bar {
   right: 112px;
 }
+/* With a window open, notices drop to the bottom left so they don't cover its title or close button. */
+.app:has(.modal-backdrop) .toasts {
+  z-index: 95;
+  top: auto;
+  bottom: 16px;
+  left: 16px;
+  right: auto;
+  justify-items: start;
+}
 @media (max-width: 1000px) {
   .app.mode-player.has-panel .town {
     right: 104px;
@@ -1157,7 +1168,7 @@ button.my-card:hover {
   }
   .mode-player .toasts {
     right: 8px;
-    bottom: 76px;
+    top: 64px;
   }
 }
 
