@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { go } from '../App';
 import { ALL_ROLES, defaultAlignment, genericIcon, getRole, jinxesFor, nightReminder, TEAM_SINGULAR, rolesOfTeam } from '../data';
-import { player, useClient } from '../net/client';
+import { player } from '../net/client';
 import { NEEDS_SHOWN, seatName, st, useHost } from '../state/host';
 import { notes } from '../state/notes';
 import { ui, useUI } from '../state/ui';
@@ -10,10 +10,9 @@ import { BagModal } from './Bag';
 import { CharacterGrid } from './CharacterGrid';
 import { Icon } from './Icon';
 import { Modal } from './Modal';
-import { PanelView } from './PanelView';
 import { RichText } from './RichText';
 import { evilInfoStatus } from '../lib/evilInfo';
-import { demonInfo, minionInfo } from '../lib/presets';
+import { demonInfo, minionInfo, wholeEvilTeam } from '../lib/presets';
 import { joinNames } from '../lib/util';
 import { askForNotifications, notificationsSupported } from '../lib/notify';
 import { ScriptModal } from './ScriptPicker';
@@ -40,8 +39,6 @@ export function Modals() {
       return <ShareModal />;
     case 'settings':
       return <SettingsModal />;
-    case 'journal':
-      return <JournalModal />;
     case 'role':
       return <RoleModal roleId={modal.roleId} />;
     case 'script':
@@ -128,7 +125,15 @@ function CharacterModal({ seatId, purpose }: { seatId: string; purpose: 'role' |
       }
     >
       <Scope all={all} setAll={setAll} query={query} setQuery={setQuery} />
-      <CharacterGrid ids={ids} onPick={pick} selected={current ? [current] : []} dimmed={purpose === 'shown' ? inPlay : undefined} tags={purpose === 'note' ? undefined : tags} query={query} />
+      <CharacterGrid
+        ids={ids}
+        onPick={pick}
+        selected={current ? [current] : []}
+        dimmed={purpose === 'shown' ? inPlay : undefined}
+        tags={purpose === 'note' ? undefined : tags}
+        query={query}
+        teams={purpose === 'note' ? ['townsfolk', 'outsider', 'minion', 'demon'] : undefined}
+      />
     </Modal>
   );
 }
@@ -528,27 +533,6 @@ function PlayerSettings() {
   );
 }
 
-function JournalModal() {
-  const priv = useClient((s) => s.priv);
-  const log = [...(priv?.log ?? [])].reverse();
-  const replies = priv?.replies ?? [];
-  return (
-    <Modal title="Your journal" eyebrow="Everything the Storyteller has shown you" size="md">
-      {log.length === 0 ? (
-        <p className="char-empty">Nothing yet. When the Storyteller wakes you, what they show you is kept here.</p>
-      ) : (
-        <ol className="journal">
-          {log.map((w) => (
-            <li key={w.id}>
-              <span className="eyebrow">{w.when}</span>
-              <PanelView message={w} compact reply={replies.find((r) => r.wakeId === w.id)} />
-            </li>
-          ))}
-        </ol>
-      )}
-    </Modal>
-  );
-}
 
 function RoleModal({ roleId }: { roleId: string }) {
   const view = useView();
@@ -634,6 +618,17 @@ function DawnCheck() {
       }
     >
       <div className="dawn-check">
+        {!s.minionsShown && !s.bluffsShown && (
+          <button
+            className="btn primary dawn-together"
+            onClick={() => {
+              const p = wholeEvilTeam();
+              ui.wake(p.to, p.panels, null, p.extra);
+            }}
+          >
+            <img src={genericIcon('evil')} alt="" /> Wake the evil team together
+          </button>
+        )}
         {!s.minionsShown && (
           <div className="dawn-item">
             <img src={genericIcon('minion')} alt="" />

@@ -77,7 +77,8 @@ export interface WakePanel {
   text: string;
 }
 
-export type Ask = { kind: 'players'; count: number } | { kind: 'character'; count: number } | { kind: 'yesno' } | null;
+/** What the player is asked to answer, optionally in the Storyteller's own words ("Who do you want to kill?"). */
+export type Ask = (({ kind: 'players'; count: number } | { kind: 'character'; count: number } | { kind: 'yesno' }) & { prompt?: string }) | null;
 
 export interface WakeMessage {
   id: string;
@@ -86,6 +87,8 @@ export interface WakeMessage {
   ask: Ask;
   at: number;
   when: string;
+  /** Cards only some of the people woken see, by seat: the Demon's bluffs when the evil team wakes together. */
+  extra?: Record<string, WakePanel[]>;
 }
 
 export interface WakeReply {
@@ -128,6 +131,8 @@ export interface GameState {
   marked: { seatId: string; votes: number } | null;
   history: VoteRecord[];
   townHall: TownHall | null;
+  /** Seats killed during this night. Players don't see these deaths until the day begins. */
+  nightDeaths: string[];
   awake: Record<string, AwakeState>;
   wakes: WakeMessage[];
   replies: WakeReply[];

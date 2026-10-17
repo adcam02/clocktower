@@ -123,7 +123,7 @@ export const EDITIONS: Edition[] = [
 
 export function editionScript(id: string): Script {
   const ed = EDITIONS.find((e) => e.id === id)!;
-  const roles = ALL_ROLES.filter((r) => r.edition === id && r.team !== 'fabled' && r.team !== 'loric').map((r) => r.id);
+  const roles = ALL_ROLES.filter((r) => r.edition === id && ['townsfolk', 'outsider', 'minion', 'demon'].includes(r.team)).map((r) => r.id);
   return { id, name: ed.name, author: 'The Pandemonium Institute', roles };
 }
 
@@ -227,6 +227,13 @@ export const NIGHT_SPECIALS: Record<string, { name: string; first: string; other
     first: 'Check that all eyes are closed. Some Travellers & Fabled act.',
     other: 'Check that all eyes are closed. Some Travellers & Fabled act.',
     icon: 'dusk',
+  },
+  eviltogether: {
+    name: 'Evil team, together',
+    first:
+      'Wake the Demon and all Minions at once, so they all see who the Demon and the Minions are. Only the Demon also sees the three bluffs. Use this instead of Minion info and Demon info.',
+    other: '',
+    icon: 'evil',
   },
   minioninfo: {
     name: 'Minion info',

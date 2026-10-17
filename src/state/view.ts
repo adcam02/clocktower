@@ -28,6 +28,8 @@ export interface SeatView {
   isMe: boolean;
   awake: AwakeState | null;
   traveller: boolean;
+  /** Storyteller only: killed tonight, so players won't see it until day. */
+  diesAtDawn: boolean;
 }
 
 export interface View {
@@ -76,6 +78,7 @@ export function useStorytellerView(): View {
         isMe: false,
         awake: g.awake[s.id] ?? null,
         traveller: isTraveller(s.roleId),
+        diesAtDawn: g.phase === 'night' && g.nightDeaths.includes(s.id),
       })),
       fabled: g.fabled,
       nomination: g.nomination,
@@ -120,6 +123,7 @@ export function usePlayerView(): View | null {
           isMe,
           awake: null,
           traveller: isTraveller(s.roleId),
+          diesAtDawn: false,
         };
       }),
       fabled: pub.fabled,

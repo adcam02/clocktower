@@ -478,22 +478,59 @@
   font-size: 14px;
 }
 .dial-block {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 3px 10px;
-  border-radius: 999px;
+  display: grid;
+  justify-items: center;
+  gap: 1px;
+  max-width: 100%;
+  padding: 4px 12px 5px;
+  border-radius: 12px;
   background: rgba(120, 15, 30, 0.6);
   border: 1px solid rgba(255, 138, 148, 0.4);
   font-size: 14px;
+  line-height: 1.25;
+}
+.dial-block > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.dial-block small {
+  font-size: 12px;
+  color: rgba(255, 225, 228, 0.78);
+}
+.dial-block.tie-only small {
+  color: var(--brass-hi);
+}
+.dial-block.locked {
+  background: linear-gradient(180deg, rgba(170, 20, 40, 0.85), rgba(110, 10, 25, 0.85));
+  border-color: var(--evil-hi);
+  box-shadow: 0 0 22px rgba(200, 38, 59, 0.45);
+}
+.dial-block.locked small {
+  color: #fff;
+  font-family: var(--font-caps);
+  letter-spacing: 0.02em;
 }
 .dial-content.snug .dial-block {
   font-size: 12px;
-  padding: 2px 8px;
+  padding: 2px 8px 3px;
+}
+.dial-content.snug .dial-block small {
+  font-size: 10.5px;
 }
 .dial-block svg {
   width: 15px;
   height: 15px;
+}
+.nom-block {
+  font-size: 13.5px;
+  color: var(--text-dim);
+}
+.nom-block.tie-only {
+  color: var(--brass-hi);
+}
+.nom-block.locked {
+  color: var(--evil-hi);
 }
 
 /* ---------------------------------------------------------------- nomination */
@@ -743,4 +780,31 @@
 .menu-seg button.on.evil {
   background: var(--evil-deep);
   color: var(--evil-hi);
+}
+
+/* Killed tonight: the Storyteller sees it, players see it at dawn. */
+.seat.dies-at-dawn .shroud {
+  opacity: 0.55;
+}
+.seat-dawn {
+  position: absolute;
+  left: 50%;
+  top: calc(var(--t) * -0.5 - 18px);
+  transform: translateX(-50%);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 1px 8px 2px 6px;
+  border-radius: 999px;
+  background: rgba(30, 36, 87, 0.92);
+  border: 1px solid rgba(140, 160, 255, 0.5);
+  font-family: var(--font-caps);
+  font-size: 12px;
+  color: #cdd6ff;
+  white-space: nowrap;
+  z-index: 3;
+}
+.seat-dawn svg {
+  width: 12px;
+  height: 12px;
 }

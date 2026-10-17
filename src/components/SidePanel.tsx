@@ -1,11 +1,12 @@
 import { useState } from 'react';
 import { editionLogo, getRole, jinxesFor, nightOrderList, nightReminder, NIGHT_SPECIALS, rolesByTeam, TEAM_LABEL, TEAMS, genericIcon } from '../data';
-import { demonInfo, minionInfo, presetFor } from '../lib/presets';
+import { demonInfo, minionInfo, presetFor, wholeEvilTeam } from '../lib/presets';
 import { evilInfoStatus } from '../lib/evilInfo';
 import { seatName, seatsWithRole, st, useHost } from '../state/host';
 import { ui, useUI, type Panel } from '../state/ui';
 import { useView } from '../state/view';
 import { Icon } from './Icon';
+import { Journal, Notepad } from './Notepad';
 import { PanelView, ReplyLine } from './PanelView';
 import { RichText } from './RichText';
 import { Token } from './Token';
@@ -19,10 +20,14 @@ export function SidePanel() {
     { id: 'reference', label: 'Characters' },
     { id: 'history', label: view.mode === 'st' ? 'Log' : 'Votes' },
   ];
-  const active = tabs.some((t) => t.id === panel) ? panel : 'reference';
+  const active = view.mode === 'player' || tabs.some((t) => t.id === panel) ? panel : 'reference';
+  const titles: Record<string, string> = { reference: 'Characters', notes: 'Notepad', journal: 'Journal', history: 'Votes' };
   return (
     <aside className="side-panel surface" aria-label="Side panel">
       <header className="side-head">
+        {view.mode === 'player' ? (
+          <h2 className="side-title">{titles[active] ?? ''}</h2>
+        ) : (
         <div className="side-tabs" role="tablist">
           {tabs.map((t) => (
             <button key={t.id} role="tab" aria-selected={active === t.id} className={active === t.id ? 'on' : ''} onClick={() => useUI.setState({ panel: t.id })}>
@@ -30,6 +35,7 @@ export function SidePanel() {
             </button>
           ))}
         </div>
+        )}
         <button className="btn quiet square small" onClick={() => useUI.setState({ panel: null })} aria-label="Close panel">
           <Icon name="x" />
         </button>
@@ -38,6 +44,8 @@ export function SidePanel() {
         {active === 'night' && <NightOrder />}
         {active === 'reference' && <Reference />}
         {active === 'history' && <History />}
+        {active === 'notes' && <Notepad />}
+        {active === 'journal' && <Journal />}
       </div>
     </aside>
   );
@@ -57,6 +65,8 @@ function NightOrderList() {
   const [showAll, setShowAll] = useState(false);
   const k = kind ?? (g.day <= 1 ? 'first' : 'other');
   const list = nightOrderList(k, g.script);
+  // The Storyteller's sheet offers waking the whole evil team in one go, just before the separate steps.
+  if (k === 'first' && list.includes('minioninfo')) list.splice(list.indexOf('minioninfo'), 0, 'eviltogether');
   const players = g.seats.length;
   const awake = Object.keys(g.awake).length;
   const evil = evilInfoStatus(g);
@@ -68,7 +78,7 @@ function NightOrderList() {
       const fabled = g.fabled.includes(id);
       const onScript = g.script.roles.includes(id);
       if (special) {
-        if (k === 'other' && (id === 'minioninfo' || id === 'demoninfo')) return null;
+        if (k === 'other' && (id === 'minioninfo' || id === 'demoninfo' || id === 'eviltogether')) return null;
         return { id, special: true, holders, inPlay: true };
       }
       if (!holders.length && !fabled && !(showAll && onScript)) return null;
@@ -104,10 +114,14 @@ function NightOrderList() {
           const special = NIGHT_SPECIALS[row.id];
           const role = getRole(row.id);
           const dead = row.holders.length > 0 && row.holders.every((h) => h.seat.dead);
-          const few = (row.id === 'minioninfo' || row.id === 'demoninfo') && players < 7;
+          const evilStep = row.id === 'minioninfo' || row.id === 'demoninfo' || row.id === 'eviltogether';
+          const few = evilStep && players < 7;
           const text = nightReminder(row.id, k);
           const wake = () => {
-            if (row.id === 'minioninfo') {
+            if (row.id === 'eviltogether') {
+              const p = wholeEvilTeam();
+              ui.wake(p.to, p.panels, null, p.extra);
+            } else if (row.id === 'minioninfo') {
               const p = minionInfo();
               ui.wake(p.to, p.panels);
             } else if (row.id === 'demoninfo') {
@@ -129,7 +143,7 @@ function NightOrderList() {
               </button>
               <div className="night-icon">
                 {special ? (
-                  special.icon === 'minion' || special.icon === 'demon' ? (
+                  special.icon === 'minion' || special.icon === 'demon' || special.icon === 'evil' ? (
                     <img src={genericIcon(special.icon)} alt="" />
                   ) : (
                     <Icon name={special.icon === 'dusk' ? 'moon' : 'sun'} />
@@ -151,6 +165,11 @@ function NightOrderList() {
                   {!few && k === 'first' && row.id === 'minioninfo' && evil.minions.length > 0 && (
                     <span className={`night-state ${evil.minionsShown ? 'ok' : 'todo'}`}>{evil.minionsShown ? 'Shown' : 'Not shown yet'}</span>
                   )}
+                  {!few && k === 'first' && row.id === 'eviltogether' && evil.demons.length > 0 && (
+                    <span className={`night-state ${evil.minionsShown && evil.bluffsShown ? 'ok' : 'todo'}`}>
+                      {evil.minionsShown && evil.bluffsShown ? 'Done' : 'Not shown yet'}
+                    </span>
+                  )}
                   {!few && k === 'first' && row.id === 'demoninfo' && evil.demons.length > 0 && (
                     <span className={`night-state ${evil.bluffsShown ? 'ok' : 'todo'}`}>{evil.bluffsShown ? 'Bluffs shown' : 'Bluffs not shown yet'}</span>
                   )}
@@ -161,7 +180,7 @@ function NightOrderList() {
                   </p>
                 )}
               </div>
-              {(row.holders.length > 0 || row.id === 'minioninfo' || row.id === 'demoninfo') && (
+              {(row.holders.length > 0 || evilStep) && (
                 <button className="btn small night-wake" onClick={wake} title="Wake them">
                   <Icon name="wake" />
                 </button>
@@ -183,6 +202,9 @@ function Reference() {
   const jinxes = jinxesFor(s.roles);
   const [tab, setTab] = useState<'roles' | 'night'>('roles');
   const inPlay = new Set(view.mode === 'st' ? view.seats.map((x) => x.roleId) : []);
+  // Travellers only confuse the sheet unless one is actually sitting in the game.
+  const seated = new Set(view.seats.filter((x) => x.traveller && x.roleId).map((x) => x.roleId!));
+  const travellers = [...seated].map((id) => getRole(id)).filter((r) => r !== undefined);
   return (
     <div className="reference">
       <div className="ref-head">
@@ -207,7 +229,7 @@ function Reference() {
       </div>
       {tab === 'roles' ? (
         <>
-          {TEAMS.filter((t) => teams[t].length).map((t) => (
+          {TEAMS.filter((t) => teams[t].length && t !== 'traveller').map((t) => (
             <section key={t} className={`ref-team team-${t}`}>
               <h3>{TEAM_LABEL[t]}</h3>
               {teams[t].map((r) => (
@@ -223,6 +245,22 @@ function Reference() {
               ))}
             </section>
           ))}
+          {travellers.length > 0 && (
+            <section className="ref-team team-traveller">
+              <h3>Travellers in play</h3>
+              {travellers.map((r) => (
+                <button key={r.id} className="ref-role" onClick={() => ui.open({ kind: 'role', roleId: r.id })}>
+                  <Token roleId={r.id} label={false} />
+                  <div>
+                    <strong>{r.name}</strong>
+                    <p>
+                      <RichText text={r.ability} />
+                    </p>
+                  </div>
+                </button>
+              ))}
+            </section>
+          )}
           {view.fabled.length > 0 && (
             <section className="ref-team team-fabled">
               <h3>Fabled in play</h3>
@@ -262,7 +300,7 @@ function Reference() {
               <h3>{k === 'first' ? 'First night' : 'Other nights'}</h3>
               <ol>
                 {nightOrderList(k, s)
-                  .filter((id) => NIGHT_SPECIALS[id] || (s.roles.includes(id) && nightReminder(id, k)))
+                  .filter((id) => NIGHT_SPECIALS[id] || (s.roles.includes(id) && nightReminder(id, k) && (getRole(id)?.team !== 'traveller' || seated.has(id))))
                   .filter((id) => k === 'first' || (id !== 'minioninfo' && id !== 'demoninfo'))
                   .map((id) => {
                     const sp = NIGHT_SPECIALS[id];

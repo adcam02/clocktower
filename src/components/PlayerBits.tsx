@@ -1,8 +1,8 @@
 import { getRole, TEAM_SINGULAR } from '../data';
 import { player } from '../net/client';
-import { ui } from '../state/ui';
+import { ui, useUI, type Panel } from '../state/ui';
 import { useView } from '../state/view';
-import { Icon } from './Icon';
+import { Icon, type IconName } from './Icon';
 import { RichText } from './RichText';
 import { Token } from './Token';
 
@@ -83,5 +83,39 @@ export function VoteBar() {
         <Icon name="hand" /> {up ? 'Hand raised' : 'Raise hand'}
       </button>
     </div>
+  );
+}
+
+/** The player's menu: big, labelled buttons down the right side (along the bottom on phones). */
+export function PlayerRail() {
+  const view = useView();
+  const panel = useUI((s) => s.panel);
+  const muted = useUI((s) => s.muted);
+  const me = view.seats.find((s) => s.isMe);
+  const open = (p: Exclude<Panel, null>) => () => ui.togglePanel(p);
+  const items: { key: string; icon: IconName; label: string; on?: boolean; disabled?: boolean; action: () => void }[] = [
+    {
+      key: 'me',
+      icon: 'user',
+      label: 'Me',
+      disabled: !me?.roleId,
+      action: () => me?.roleId && ui.open({ kind: 'role', roleId: me.roleId }),
+    },
+    { key: 'reference', icon: 'book', label: 'Characters', on: panel === 'reference', action: open('reference') },
+    { key: 'notes', icon: 'notepad', label: 'Notepad', on: panel === 'notes', action: open('notes') },
+    { key: 'journal', icon: 'feather', label: 'Journal', on: panel === 'journal', action: open('journal') },
+    { key: 'history', icon: 'vote', label: 'Votes', on: panel === 'history', action: open('history') },
+    { key: 'sound', icon: muted ? 'mute' : 'volume', label: muted ? 'Sound off' : 'Sound on', action: () => useUI.setState({ muted: !muted }) },
+    { key: 'settings', icon: 'cog', label: 'Settings', action: () => ui.open({ kind: 'settings' }) },
+  ];
+  return (
+    <nav className="player-rail surface" aria-label="Menu">
+      {items.map((it) => (
+        <button key={it.key} className={`rail-item ${it.on ? 'on' : ''}`} onClick={it.action} disabled={it.disabled} aria-pressed={it.on}>
+          <Icon name={it.icon} />
+          <span>{it.label}</span>
+        </button>
+      ))}
+    </nav>
   );
 }

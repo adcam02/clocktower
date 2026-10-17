@@ -189,6 +189,18 @@ const paths: Record<string, React.ReactNode> = {
     </>
   ),
   menu: <path d="M4 7h16M4 12h16M4 17h16" />,
+  user: (
+    <>
+      <circle cx="12" cy="8" r="4" />
+      <path d="M4 21c.6-4.2 3.9-7 8-7s7.4 2.8 8 7" />
+    </>
+  ),
+  notepad: (
+    <>
+      <rect x="4.5" y="3.5" width="15" height="18" rx="2" />
+      <path d="M8 2v3M12 2v3M16 2v3M8 10h8M8 14h8M8 18h5" />
+    </>
+  ),
   info: (
     <>
       <circle cx="12" cy="12" r="9" />

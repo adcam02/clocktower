@@ -115,7 +115,7 @@ function AskBox({ wake, reply }: { wake: WakeMessage; reply?: WakeReply }) {
             </div>
           ) : (
             <div className="ask-chars">
-              <CharacterGrid ids={view.script.roles} size={58} selected={picked} onPick={pick} />
+              <CharacterGrid ids={view.script.roles} size={58} selected={picked} onPick={pick} teams={['townsfolk', 'outsider', 'minion', 'demon']} />
             </div>
           )}
           <button

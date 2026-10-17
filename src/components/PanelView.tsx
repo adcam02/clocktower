@@ -35,6 +35,7 @@ function X({ onClick, label }: { onClick: () => void; label: string }) {
 
 export function askText(ask: Ask): string {
   if (!ask) return '';
+  if (ask.prompt) return ask.prompt;
   if (ask.kind === 'yesno') return 'Answer yes or no';
   if (ask.kind === 'players') return ask.count === 1 ? 'Choose a player' : `Choose ${ask.count} players`;
   return ask.count === 1 ? 'Choose a character' : `Choose ${ask.count} characters`;

@@ -2,6 +2,7 @@ import { CORE_TEAMS, composition, genericIcon, TEAM_LABEL } from '../data';
 import { majorityOf, st } from '../state/host';
 import { useView, type View } from '../state/view';
 import { Icon } from './Icon';
+import { blockOutlook } from '../lib/block';
 import type { Geometry } from './Square';
 
 const NUMERALS = ['XII', 'I', 'II', 'III', 'IIII', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 'XI'];
@@ -70,6 +71,16 @@ function Nomination() {
   const votes = countVotes(view);
   const done = n.status === 'done';
   const v = done ? verdict(view, votes, majority) : null;
+  const onBlock = view.marked && view.marked.seatId !== n.nomineeId ? view.seats.find((s) => s.id === view.marked!.seatId) : null;
+  const outlook = onBlock ? blockOutlook(view) : null;
+  const blockLine =
+    onBlock && outlook
+      ? outlook.state === 'open'
+        ? { state: 'open', text: `To replace ${onBlock.label}: ${outlook.beat} votes${outlook.tie ? `. ${outlook.tie} ties and saves both.` : ''}` }
+        : outlook.state === 'tie-only'
+          ? { state: 'tie-only', text: `${onBlock.label} can only be tied now: ${outlook.tie} votes saves both.` }
+          : { state: 'locked', text: `${onBlock.label}’s execution can’t be stopped by this vote.` }
+      : null;
   const handOn = n.step === 0 ? n.nomineeId : n.order[n.step - 1];
 
   return (
@@ -96,6 +107,7 @@ function Nomination() {
           {votes === 1 ? 'vote' : 'votes'} in favour <span className="nom-majority">· majority is {majority}</span>
         </span>
       </div>
+      {!done && blockLine && <div className={`nom-block ${blockLine.state}`}>{blockLine.text}</div>}
       {n.status === 'running' && <div className="nom-status">{n.step === 0 ? 'The hand is about to move…' : `The hand is on ${name(handOn)}`}</div>}
       {n.status === 'paused' && <div className="nom-status">Voting paused</div>}
       {n.status === 'idle' && !isST && <div className="nom-status">Raise your hand to vote. Voting starts soon.</div>}
@@ -167,6 +179,7 @@ function Stats() {
   const votes = seats.filter((s) => !s.dead || s.ghostVote).length;
   const comp = composition(players);
   const marked = view.marked && seats.find((s) => s.id === view.marked!.seatId);
+  const outlook = blockOutlook(view);
 
   return (
     <div className="stats">
@@ -206,8 +219,11 @@ function Stats() {
         )}
       </div>
       {marked && (
-        <div className="dial-block">
-          <Icon name="axe" /> {marked.label} is on the block · {view.marked!.votes}
+        <div className={`dial-block ${outlook?.state ?? ''}`}>
+          <span>
+            <Icon name="axe" /> {marked.label} is on the block · {view.marked!.votes}
+          </span>
+          {outlook && <small>{outlook.text}</small>}
         </div>
       )}
     </div>

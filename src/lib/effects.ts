@@ -6,6 +6,7 @@ import type { View } from '../state/view';
 import { getRole } from '../data';
 import { countBeat, dawn, gavel, nightfall, primeAudio, tick, townBells, wakeChime } from './audio';
 import { notify } from './notify';
+import { joinNames } from './util';
 
 /** Sounds, banners and notices that follow from changes in the game. */
 export function useEffects(view: View | null) {
@@ -28,7 +29,14 @@ export function useEffects(view: View | null) {
         ui.banner(`Night ${view.day}`, 'Close your eyes');
       } else {
         dawn();
-        ui.banner(`Day ${view.day}`, 'The town wakes');
+        const died = view.seats.filter((s) => s.dead && !p.seats.find((x) => x.id === s.id)?.dead).map((s) => s.label);
+        const news =
+          view.mode === 'player'
+            ? died.length
+              ? `${joinNames(died)} died in the night`
+              : 'Nobody died in the night'
+            : 'The town wakes';
+        ui.banner(`Day ${view.day}`, news);
       }
     }
     const n = view.nomination;

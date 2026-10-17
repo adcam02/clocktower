@@ -90,29 +90,24 @@ export function TopBar() {
         )}
       </div>
       {isST && <PhaseSwitch />}
-      <nav className="topbar-tools">
-        {isST && (
-          <>
-            <ToolButton icon="scroll" label="Night order" active={panel === 'night'} onClick={toggle('night')} />
-            <ToolButton icon="bag" label="Bag" onClick={() => ui.open({ kind: 'bag' })} />
-            <ToolButton icon="wake" label="Wake" badge={awake} onClick={() => ui.wake(useUI.getState().draft.to)} />
-            <HallButton />
-          </>
-        )}
-        <ToolButton icon="book" label="Characters" active={panel === 'reference'} onClick={toggle('reference')} />
-        {!isST && <ToolButton icon="feather" label="Journal" onClick={() => ui.open({ kind: 'journal' })} />}
-        <ToolButton icon="vote" label="Votes" active={panel === 'history'} onClick={toggle('history')} />
-        {isST && (
+      {isST && (
+        <nav className="topbar-tools">
+          <ToolButton icon="scroll" label="Night order" active={panel === 'night'} onClick={toggle('night')} />
+          <ToolButton icon="bag" label="Bag" onClick={() => ui.open({ kind: 'bag' })} />
+          <ToolButton icon="wake" label="Wake" badge={awake} onClick={() => ui.wake(useUI.getState().draft.to)} />
+          <HallButton />
+          <ToolButton icon="book" label="Characters" active={panel === 'reference'} onClick={toggle('reference')} />
+          <ToolButton icon="vote" label="Votes" active={panel === 'history'} onClick={toggle('history')} />
           <ToolButton
             icon={hide ? 'eyeOff' : 'eye'}
             label={hide ? 'Show grimoire' : 'Hide grimoire'}
             active={hide}
             onClick={() => useUI.setState({ hideGrimoire: !hide })}
           />
-        )}
-        <ToolButton icon={muted ? 'mute' : 'volume'} label={muted ? 'Sound off' : 'Sound on'} onClick={() => useUI.setState({ muted: !muted })} />
-        <ToolButton icon="cog" label={isST ? 'Game' : 'Settings'} onClick={() => ui.open({ kind: 'settings' })} />
-      </nav>
+          <ToolButton icon={muted ? 'mute' : 'volume'} label={muted ? 'Sound off' : 'Sound on'} onClick={() => useUI.setState({ muted: !muted })} />
+          <ToolButton icon="cog" label="Game" onClick={() => ui.open({ kind: 'settings' })} />
+        </nav>
+      )}
     </header>
   );
 }

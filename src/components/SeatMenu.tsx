@@ -119,7 +119,7 @@ export function SeatMenu({ seat, geo, pt }: { seat: SeatView; geo: Geometry; pt:
           </Item>
         )}
         <Item icon={seat.dead ? 'heart' : 'skull'} tone={seat.dead ? undefined : 'blood'} onClick={() => (st.toggleDead(seat.id), close())}>
-          {seat.dead ? 'Bring back to life' : 'Kill'}
+          {seat.dead ? 'Bring back to life' : view.phase === 'night' ? 'Kill (players see it at dawn)' : 'Kill'}
         </Item>
         {seat.dead && (
           <Item icon="ghost" onClick={() => st.toggleGhostVote(seat.id)}>

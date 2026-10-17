@@ -198,6 +198,7 @@ function SeatSpot({ seat, geo, i }: { seat: SeatView; geo: Geometry; i: number }
       className={[
         'seat',
         seat.dead && 'is-dead',
+        seat.diesAtDawn && 'dies-at-dawn',
         seat.isMe && 'is-me',
         isNominee && 'is-nominee',
         isNominator && 'is-nominator',
@@ -252,6 +253,11 @@ function SeatSpot({ seat, geo, i }: { seat: SeatView; geo: Geometry; i: number }
         )}
       </button>
 
+      {st_ && seat.diesAtDawn && (
+        <span className="seat-dawn" title="Players will see this death at dawn">
+          <Icon name="moon" /> at dawn
+        </span>
+      )}
       {marked && (
         <span className="seat-mark" title="Marked for execution">
           <Icon name="axe" />

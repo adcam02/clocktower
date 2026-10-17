@@ -13,7 +13,6 @@ export type Modal =
   | { kind: 'rename'; seatId: string }
   | { kind: 'share' }
   | { kind: 'settings' }
-  | { kind: 'journal' }
   | { kind: 'claim'; seatId: string }
   | { kind: 'role'; roleId: string }
   | { kind: 'dawnCheck' }
@@ -26,13 +25,15 @@ export type Pick =
   | { kind: 'swapRole'; seatId: string }
   | null;
 
-export type Panel = 'night' | 'reference' | 'history' | null;
+export type Panel = 'night' | 'reference' | 'history' | 'notes' | 'journal' | null;
 
 export interface WakeDraft {
   to: string[];
   panels: WakePanel[];
   active: number;
   ask: Ask;
+  /** Cards only some of the people woken will see, by seat. */
+  extra: Record<string, WakePanel[]>;
   sentId: string | null;
 }
 
@@ -59,7 +60,7 @@ export const useUI = create<UI>(() => ({
   pick: null,
   hideGrimoire: false,
   muted: prefs.muted ?? false,
-  draft: { to: [], panels: [emptyPanel()], active: 0, ask: null, sentId: null },
+  draft: { to: [], panels: [emptyPanel()], active: 0, ask: null, extra: {}, sentId: null },
   toasts: [],
   banner: null,
 }));
@@ -76,12 +77,12 @@ export const ui = {
   pick: (pick: Pick) => useUI.setState({ pick, menuSeat: null }),
   setDraft: (fn: (d: WakeDraft) => WakeDraft) => useUI.setState((s) => ({ draft: fn(s.draft) })),
   /** Opens the wake screen for these seats, optionally with cards already laid out. */
-  wake: (to: string[], panels?: WakePanel[], ask: Ask = null) =>
+  wake: (to: string[], panels?: WakePanel[], ask: Ask = null, extra: Record<string, WakePanel[]> = {}) =>
     useUI.setState((s) => ({
       modal: { kind: 'wake' },
       menuSeat: null,
       draft: panels
-        ? { to, panels, active: panels.length - 1, ask, sentId: null }
+        ? { to, panels, active: panels.length - 1, ask, extra, sentId: null }
         : { ...s.draft, to, sentId: s.draft.to.join() === to.join() ? s.draft.sentId : null },
     })),
   banner: (text: string, sub = '') => {

@@ -13,6 +13,8 @@ import { askText, PanelView, ReplyLine } from './PanelView';
 
 type Adder = 'player' | 'character' | 'text' | null;
 
+const QUESTIONS = ['Who do you want to kill?', 'Who do you want to poison?', 'Who do you want to protect?', 'Who is your master?'];
+
 const toggle = <T,>(list: T[], v: T) => (list.includes(v) ? list.filter((x) => x !== v) : [...list, v]);
 
 export function WakeComposer() {
@@ -28,8 +30,10 @@ export function WakeComposer() {
     ui.setDraft((d) => ({ ...d, panels: d.panels.map((x, i) => (i === d.active ? fn(x) : x)) }));
   const setTo = (to: string[]) => ui.setDraft((d) => ({ ...d, to }));
   const setAsk = (ask: Ask) => ui.setDraft((d) => ({ ...d, ask }));
-  const load = (p: { to: string[]; panels: WakePanel[] }, ask: Ask = null) =>
-    ui.setDraft(() => ({ to: p.to, panels: p.panels, active: p.panels.length - 1, ask, sentId: null }));
+  // Switching between players and characters keeps any question already written.
+  const prompt = draft.ask?.prompt;
+  const load = (p: { to: string[]; panels: WakePanel[]; extra?: Record<string, WakePanel[]> }, ask: Ask = null) =>
+    ui.setDraft(() => ({ to: p.to, panels: p.panels, active: p.panels.length - 1, ask, extra: p.extra ?? {}, sentId: null }));
 
   const addCard = (card: CardId) =>
     ui.setDraft((d) => {
@@ -43,12 +47,15 @@ export function WakeComposer() {
 
   const sent = g.wakes.find((w) => w.id === draft.sentId);
   const content = draft.panels.filter((p) => p.card || p.roleIds.length || p.seatIds.length || p.signs.length || p.text.trim());
-  const dirty = !sent || JSON.stringify([sent.to, sent.panels, sent.ask]) !== JSON.stringify([draft.to, content, draft.ask]);
+  // Cards only some of them see, kept to people still being woken.
+  const extra = Object.fromEntries(Object.entries(draft.extra ?? {}).filter(([seat, p]) => draft.to.includes(seat) && p.length));
+  const dirty =
+    !sent || JSON.stringify([sent.to, sent.panels, sent.ask, sent.extra ?? {}]) !== JSON.stringify([draft.to, content, draft.ask, extra]);
   const names = draft.to.map((id) => seatName(g, id));
 
   const send = () => {
     if (!draft.to.length || !content.length) return;
-    const id = st.wake(draft.to, content, draft.ask);
+    const id = st.wake(draft.to, content, draft.ask, extra);
     ui.setDraft((d) => ({ ...d, sentId: id }));
   };
 
@@ -135,7 +142,7 @@ export function WakeComposer() {
           </div>
           <button
             className="btn quiet"
-            onClick={() => ui.setDraft((d) => ({ ...d, panels: [emptyPanel()], active: 0, ask: null, sentId: null }))}
+            onClick={() => ui.setDraft((d) => ({ ...d, panels: [emptyPanel()], active: 0, ask: null, extra: {}, sentId: null }))}
           >
             Clear
           </button>
@@ -275,13 +282,13 @@ export function WakeComposer() {
                 <button className={!draft.ask ? 'on' : ''} onClick={() => setAsk(null)}>
                   No
                 </button>
-                <button className={draft.ask?.kind === 'players' ? 'on' : ''} onClick={() => setAsk({ kind: 'players', count: draft.ask?.kind === 'players' ? draft.ask.count : 1 })}>
+                <button className={draft.ask?.kind === 'players' ? 'on' : ''} onClick={() => setAsk({ kind: 'players', count: draft.ask?.kind === 'players' ? draft.ask.count : 1, prompt })}>
                   Players
                 </button>
-                <button className={draft.ask?.kind === 'character' ? 'on' : ''} onClick={() => setAsk({ kind: 'character', count: 1 })}>
+                <button className={draft.ask?.kind === 'character' ? 'on' : ''} onClick={() => setAsk({ kind: 'character', count: 1, prompt })}>
                   Character
                 </button>
-                <button className={draft.ask?.kind === 'yesno' ? 'on' : ''} onClick={() => setAsk({ kind: 'yesno' })}>
+                <button className={draft.ask?.kind === 'yesno' ? 'on' : ''} onClick={() => setAsk({ kind: 'yesno', prompt })}>
                   Yes or no
                 </button>
               </div>
@@ -296,6 +303,26 @@ export function WakeComposer() {
                   </button>
                 </div>
               )}
+              <div className="ask-question">
+                <input
+                  className="input"
+                  placeholder={draft.ask ? askText({ ...draft.ask, prompt: undefined }) : 'Ask them a question (optional)'}
+                  value={prompt ?? ''}
+                  maxLength={80}
+                  onChange={(e) => setAsk({ ...(draft.ask ?? { kind: 'players', count: 1 }), prompt: e.target.value || undefined } as Ask)}
+                />
+                <div className="ask-chips">
+                  {QUESTIONS.map((q) => (
+                    <button
+                      key={q}
+                      className={`chip-btn ${prompt === q ? 'on' : ''}`}
+                      onClick={() => setAsk({ ...(draft.ask && draft.ask.kind !== 'yesno' ? draft.ask : { kind: 'players', count: 1 }), prompt: q } as Ask)}
+                    >
+                      {q}
+                    </button>
+                  ))}
+                </div>
+              </div>
             </div>
           </div>
 
@@ -325,7 +352,21 @@ export function WakeComposer() {
                   clearText: (i) => ui.setDraft((d) => ({ ...d, panels: d.panels.map((p, k) => (k === i ? { ...p, text: '' } : p)) })),
                 }}
               />
-              {draft.ask && <div className="preview-ask">They’ll be asked to: {askText(draft.ask).toLowerCase()}</div>}
+              {draft.ask && <div className="preview-ask">They’ll be asked: {askText(draft.ask)}</div>}
+              {Object.entries(extra).map(([seat, panels]) => (
+                <div key={seat} className="preview-extra">
+                  <div className="preview-extra-head">
+                    <span className="eyebrow">Only {seatName(g, seat)} also sees</span>
+                    <button
+                      className="btn small quiet"
+                      onClick={() => ui.setDraft((d) => ({ ...d, extra: Object.fromEntries(Object.entries(d.extra).filter(([k]) => k !== seat)) }))}
+                    >
+                      <Icon name="x" /> Remove
+                    </button>
+                  </div>
+                  <PanelView message={{ panels, ask: null }} seatFor={seat} />
+                </div>
+              ))}
             </div>
           </div>
         </div>

@@ -2164,3 +2164,65 @@
   justify-self: start;
   margin-top: 6px;
 }
+
+.ask-question {
+  flex: 1 1 100%;
+  display: grid;
+  gap: 6px;
+}
+.ask-question .input {
+  min-height: 36px;
+  font-size: 15px;
+}
+.ask-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+.chip-btn {
+  padding: 3px 11px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.04);
+  font-size: 13px;
+  color: var(--text-dim);
+  transition:
+    border-color 0.15s,
+    color 0.15s;
+}
+.chip-btn:hover {
+  color: var(--text);
+  border-color: var(--brass);
+}
+.chip-btn.on {
+  color: var(--brass-hi);
+  border-color: var(--brass-hi);
+  background: rgba(207, 167, 91, 0.14);
+}
+
+.preview-extra {
+  display: grid;
+  gap: 6px;
+  margin-top: 4px;
+  padding-top: 10px;
+  border-top: 1px dashed var(--line-strong);
+}
+.preview-extra-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.preview-extra .panel-role .token {
+  --size: 64px;
+}
+.preview-extra .info-card.size-lg {
+  --w: 92px;
+}
+.dawn-together {
+  justify-self: stretch;
+}
+.dawn-together img {
+  width: 26px;
+  height: 26px;
+  object-fit: contain;
+}

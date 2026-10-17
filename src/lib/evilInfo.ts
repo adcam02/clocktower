@@ -11,7 +11,8 @@ export function evilInfoStatus(g: GameState) {
   const minions = g.seats.filter((s) => getRole(s.roleId)?.team === 'minion');
   const players = g.seats.filter((s) => !isTraveller(s.roleId)).length;
   const applies = g.revealed && g.phase === 'night' && g.day === 1 && players >= 7 && demons.length > 0;
-  const shown = (seatId: string, test: (p: WakePanel) => boolean) => g.wakes.some((w) => w.to.includes(seatId) && w.panels.some(test));
+  const shown = (seatId: string, test: (p: WakePanel) => boolean) =>
+    g.wakes.some((w) => w.to.includes(seatId) && [...w.panels, ...(w.extra?.[seatId] ?? [])].some(test));
   const bluffsShown = demons.every((d) => shown(d.id, (p) => p.card === 'notInPlay' && p.roleIds.length > 0));
   const minionsShown = minions.every((m) => shown(m.id, (p) => p.card === 'thisIsDemon'));
   return {

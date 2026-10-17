@@ -1,6 +1,6 @@
 import { genericIcon, getRole } from '../data';
 import { evilInfoStatus } from '../lib/evilInfo';
-import { demonInfo, minionInfo } from '../lib/presets';
+import { demonInfo, minionInfo, wholeEvilTeam } from '../lib/presets';
 import { seatName, st, useHost } from '../state/host';
 import { ui, useUI } from '../state/ui';
 import { Icon } from './Icon';
@@ -61,6 +61,19 @@ function EvilChecklist() {
   return (
     <div className="evil-check surface" role="status">
       <span className="eyebrow">Don’t forget</span>
+      {!s.minionsShown && !s.bluffsShown && (
+        <button
+          className="evil-item together"
+          onClick={() => {
+            const p = wholeEvilTeam();
+            ui.wake(p.to, p.panels, null, p.extra);
+          }}
+        >
+          <img src={genericIcon('evil')} alt="" />
+          <span>Wake the evil team together, with {demon}’s bluffs</span>
+          <em>Together</em>
+        </button>
+      )}
       {!s.minionsShown && (
         <button
           className="evil-item"

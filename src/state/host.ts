@@ -59,6 +59,7 @@ function freshGame(prev?: GameState, keepPlayers = true): GameState {
     marked: null,
     history: [],
     townHall: null,
+    nightDeaths: [],
     awake: {},
     wakes: [],
     replies: [],
@@ -73,6 +74,7 @@ function loadGame(): GameState | null {
     g.nomination.status = g.nomination.step > 0 ? 'paused' : 'idle';
   }
   g.townHall ??= null;
+  g.nightDeaths ??= [];
   setCustomRoles(g.script.custom);
   return g;
 }
@@ -125,13 +127,15 @@ export function toPublic(g: GameState, online: Set<string>): PublicState {
     seats: g.seats.map((s) => {
       const traveller = isTraveller(s.roleId);
       const show = g.grimoireRevealed || traveller;
+      // A death in the night stays secret until dawn.
+      const secret = g.phase === 'night' && g.nightDeaths.includes(s.id);
       return {
         id: s.id,
         name: s.name,
         claimed: Boolean(s.playerId),
         connected: Boolean(s.playerId && online.has(s.playerId)),
-        dead: s.dead,
-        ghostVote: s.ghostVote,
+        dead: s.dead && !secret,
+        ghostVote: secret ? true : s.ghostVote,
         roleId: show ? s.roleId : null,
         alignment: g.grimoireRevealed ? seatAlignment(s) : null,
       };
@@ -152,13 +156,23 @@ export function toPrivate(g: GameState, playerId: string): PrivateState {
   const shown = seat.shownRoleId ?? seat.roleId;
   const awake = g.awake[seat.id];
   const visible = g.revealed || isTraveller(seat.roleId);
+  // Each player gets the shared cards plus any meant only for them, and never anyone else's.
+  const forSeat = (w: WakeMessage): WakeMessage => ({
+    id: w.id,
+    to: w.to,
+    panels: [...w.panels, ...(w.extra?.[seat.id] ?? [])],
+    ask: w.ask,
+    at: w.at,
+    when: w.when,
+  });
+  const current = awake ? g.wakes.find((w) => w.id === awake.wakeId) : undefined;
   return {
     seatId: seat.id,
     roleId: visible ? shown : null,
     alignment: visible ? seat.alignment ?? defaultAlignment(getRole(shown)?.team) : null,
-    wake: awake ? g.wakes.find((w) => w.id === awake.wakeId) ?? null : null,
+    wake: current ? forSeat(current) : null,
     wakeSeen: awake?.seen ?? false,
-    log: g.wakes.filter((w) => w.to.includes(seat.id)),
+    log: g.wakes.filter((w) => w.to.includes(seat.id)).map(forSeat),
     replies: g.replies.filter((r) => r.seatId === seat.id),
   };
 }
@@ -400,6 +414,8 @@ export const st = {
       if (!s) return;
       s.dead = !s.dead;
       if (!s.dead) s.ghostVote = true;
+      g.nightDeaths = g.nightDeaths.filter((x) => x !== id);
+      if (s.dead && g.phase === 'night') g.nightDeaths.push(id);
     });
   },
   toggleGhostVote(id: string) {
@@ -488,6 +504,7 @@ export const st = {
       g.marked = null;
       g.nightDone = [];
       g.townHall = null;
+      g.nightDeaths = [];
       if (phase === 'day') g.awake = {};
     });
   },
@@ -614,10 +631,12 @@ export const st = {
   },
 
   // waking players
-  wake(to: string[], panels: WakePanel[], ask: Ask): string {
+  wake(to: string[], panels: WakePanel[], ask: Ask, extra: Record<string, WakePanel[]> = {}): string {
     const id = uid();
+    const mine = Object.fromEntries(Object.entries(extra).filter(([seat, p]) => to.includes(seat) && p.length));
     update((g) => {
       const msg: WakeMessage = { id, to, panels, ask, at: Date.now(), when: nightLabel(g) };
+      if (Object.keys(mine).length) msg.extra = mine;
       g.wakes.push(msg);
       for (const seatId of to) g.awake[seatId] = { wakeId: id, seen: false };
     });

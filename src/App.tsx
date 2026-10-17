@@ -7,7 +7,7 @@ import { Modals } from './components/Modals';
 import { Toasts } from './components/Toasts';
 import { BluffBar } from './components/BluffBar';
 import { PickBanner } from './components/PickBanner';
-import { MyCharacter, VoteBar } from './components/PlayerBits';
+import { MyCharacter, PlayerRail, VoteBar } from './components/PlayerBits';
 import { WakeOverlay } from './components/WakeOverlay';
 import { TownHallCall } from './components/TownHall';
 import { Landing } from './components/Landing';
@@ -124,6 +124,7 @@ function Player({ room }: { room: string }) {
           <Square />
           <SidePanel />
           <MyCharacter />
+          <PlayerRail />
           <VoteBar />
           <Modals />
           <WakeOverlay />
