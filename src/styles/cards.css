@@ -1,0 +1,151 @@
+.info-card {
+  --w: 110px;
+  position: relative;
+  width: var(--w);
+  height: calc(var(--w) * 1.5);
+  border-radius: calc(var(--w) * 0.05);
+  box-shadow:
+    0 0 0 1.5px rgba(255, 255, 255, 0.8),
+    0 8px 22px -6px rgba(0, 0, 0, 0.8);
+  overflow: hidden;
+  flex: none;
+  isolation: isolate;
+}
+.info-card.size-sm {
+  --w: 92px;
+}
+.info-card.size-lg {
+  --w: min(210px, 42vw);
+}
+.info-card-svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+.info-card .card-bg {
+  fill: var(--c1);
+}
+.info-card.tone-umber {
+  --c1: #6b3416;
+  --c2: #8d4b22;
+}
+.info-card.tone-sapphire {
+  --c1: #1d5aa4;
+  --c2: #3a7fd0;
+}
+.info-card.tone-crimson {
+  --c1: #a0101f;
+  --c2: #cc2a3a;
+}
+.info-card.tone-amethyst {
+  --c1: #6a2486;
+  --c2: #9442b4;
+}
+.info-card.tone-verdant {
+  --c1: #2b7a2f;
+  --c2: #46a14a;
+}
+.info-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background:
+    radial-gradient(ellipse 80% 60% at 50% 35%, var(--c2), transparent 75%),
+    radial-gradient(ellipse 120% 100% at 50% 50%, transparent 55%, rgba(0, 0, 0, 0.45));
+  mix-blend-mode: soft-light;
+  pointer-events: none;
+}
+.info-card .card-frame {
+  fill: none;
+  stroke: #e9d6ae;
+  stroke-opacity: 0.55;
+  stroke-width: 0.8;
+}
+.info-card .card-curl {
+  fill: none;
+  stroke: #e9d6ae;
+  stroke-opacity: 0.7;
+  stroke-width: 0.8;
+}
+.card-art .stroke {
+  fill: none;
+  stroke: #f6ead2;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.card-art .stroke.thin {
+  stroke-width: 1.2;
+}
+.card-art .stroke.dark {
+  stroke: var(--c1);
+  stroke-width: 1.4;
+}
+.card-art .fill {
+  fill: #f6ead2;
+}
+.card-art .fill.soft {
+  fill: #f6ead2;
+  fill-opacity: 0.16;
+}
+.card-art .hole {
+  fill: var(--c1);
+}
+.card-art .finger {
+  stroke: #f6ead2;
+  stroke-width: 7;
+  stroke-linecap: round;
+}
+.info-card-title {
+  position: absolute;
+  z-index: 2;
+  left: 8%;
+  right: 8%;
+  bottom: 9%;
+  min-height: 30%;
+  display: grid;
+  place-items: end center;
+  text-align: center;
+  font-family: var(--font-caps);
+  font-size: calc(var(--w) * 0.118);
+  line-height: 1.02;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: #fff8ea;
+  text-shadow:
+    0 1px 0 rgba(0, 0, 0, 0.5),
+    0 0 10px rgba(0, 0, 0, 0.35);
+}
+
+/* ---------------------------------------------------------------- signs */
+
+.sign-svg {
+  width: 100%;
+  height: 100%;
+}
+.sign-line {
+  stroke: currentColor;
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.sign-svg .die {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 5;
+}
+.sign-svg .pip {
+  fill: currentColor;
+}
+.sign-svg .die-num {
+  fill: currentColor;
+  font-family: var(--font-body);
+  font-size: 46px;
+}
+.sign-mask {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}

@@ -1,0 +1,279 @@
+.scene {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  background: #03040a;
+  --t: 2.6s;
+}
+.scene-svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+.scene * {
+  transition-timing-function: cubic-bezier(0.45, 0, 0.2, 1);
+}
+
+.sky-day {
+  opacity: 0;
+  transition: opacity var(--t);
+}
+.is-day .sky-day {
+  opacity: 1;
+}
+
+.stars {
+  transition: opacity var(--t);
+}
+.is-day .stars {
+  opacity: 0;
+}
+.star {
+  fill: #fdf6e3;
+  animation: twinkle 5s ease-in-out infinite;
+}
+.star.g1 {
+  animation-duration: 7s;
+  animation-delay: -2s;
+}
+.star.g2 {
+  animation-duration: 3.8s;
+  animation-delay: -1s;
+  fill: #dfe6ff;
+}
+@keyframes twinkle {
+  0%,
+  100% {
+    opacity: 0.9;
+  }
+  50% {
+    opacity: 0.25;
+  }
+}
+
+.moon {
+  transition:
+    transform var(--t),
+    opacity var(--t);
+}
+.is-day .moon {
+  transform: translateY(260px);
+  opacity: 0;
+}
+.sun {
+  opacity: 0;
+  transform: translateY(160px);
+  transition:
+    transform var(--t),
+    opacity var(--t);
+}
+.is-day .sun {
+  opacity: 1;
+  transform: none;
+}
+
+.cloud {
+  animation: drift linear infinite;
+}
+.cloud ellipse {
+  fill: #20253f;
+  opacity: 0.55;
+  transition:
+    fill var(--t),
+    opacity var(--t);
+}
+.is-day .cloud ellipse {
+  fill: #e4e2dc;
+  opacity: 0.5;
+}
+@keyframes drift {
+  from {
+    transform: translateX(-420px);
+  }
+  to {
+    transform: translateX(2020px);
+  }
+}
+
+.hills {
+  fill: #0f1124;
+  transition: fill var(--t);
+}
+.is-day .hills {
+  fill: #5c6273;
+}
+.layer {
+  transition: fill var(--t);
+}
+.layer.far {
+  fill: #0b0c1a;
+}
+.is-day .layer.far {
+  fill: #3e4353;
+}
+.layer.mid {
+  fill: #08090f;
+}
+.is-day .layer.mid {
+  fill: #2c2f3b;
+}
+.layer.trees {
+  fill: #06070c;
+}
+.is-day .layer.trees {
+  fill: #232a26;
+}
+.layer.near {
+  fill: #040408;
+}
+.is-day .layer.near {
+  fill: #1b1c23;
+}
+.ground {
+  fill: #030306;
+}
+
+.windows rect {
+  transition:
+    fill 1.2s,
+    opacity 1.2s;
+}
+.windows .dark {
+  fill: #000;
+  opacity: 0.25;
+}
+.windows .lit {
+  fill: #ffc56a;
+  opacity: 0.92;
+  filter: drop-shadow(0 0 5px rgba(255, 170, 70, 0.9));
+}
+.windows .lit.flicker {
+  animation: flicker 4s steps(1) infinite;
+}
+.far-windows .lit {
+  opacity: 0.55;
+}
+.is-day .windows .lit {
+  fill: #11131a;
+  opacity: 0.35;
+  filter: none;
+  animation: none;
+}
+@keyframes flicker {
+  0%,
+  100% {
+    opacity: 0.9;
+  }
+  47% {
+    opacity: 0.6;
+  }
+  50% {
+    opacity: 0.95;
+  }
+  72% {
+    opacity: 0.45;
+  }
+}
+
+.clock-face {
+  fill: #f6cf7c;
+  transition: fill var(--t);
+}
+.is-day .clock-face {
+  fill: #d8d0bb;
+}
+.clock-rim {
+  fill: none;
+  stroke: #0b0c1a;
+  stroke-width: 4;
+}
+.clock-glow {
+  transition: opacity var(--t);
+}
+.is-day .clock-glow {
+  opacity: 0;
+}
+.clock-tick {
+  stroke: #2a1e10;
+  stroke-width: 2;
+}
+.clock-hand {
+  stroke: #1c140b;
+  stroke-width: 3;
+  stroke-linecap: round;
+}
+.clock-hour,
+.clock-minute {
+  transition: transform 3.5s cubic-bezier(0.5, 0, 0.2, 1);
+}
+.is-night .clock-hour {
+  transform: rotate(-4deg);
+}
+.is-night .clock-minute {
+  transform: rotate(-24deg);
+}
+.is-day .clock-hour {
+  transform: rotate(122deg);
+}
+.is-day .clock-minute {
+  transform: rotate(300deg);
+}
+.belfry-arch {
+  fill: #ffcf80;
+  opacity: 0.07;
+  transition: opacity var(--t);
+}
+.is-day .belfry-arch {
+  fill: #11131a;
+  opacity: 0.5;
+}
+
+.fog ellipse {
+  fill: #8d93bd;
+  opacity: 0.16;
+  transition:
+    fill var(--t),
+    opacity var(--t);
+}
+.is-day .fog ellipse {
+  fill: #efe7d6;
+  opacity: 0.14;
+}
+.fog-a {
+  animation: fog 40s ease-in-out infinite alternate;
+}
+.fog-b {
+  animation: fog 55s ease-in-out infinite alternate-reverse;
+}
+@keyframes fog {
+  from {
+    transform: translateX(-80px);
+  }
+  to {
+    transform: translateX(80px);
+  }
+}
+
+/* Darken the middle so the square reads, and the corners for depth. */
+.scene-shade {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 55% 50% at 50% 50%, rgba(3, 4, 10, 0.55), rgba(3, 4, 10, 0.15) 70%, transparent),
+    radial-gradient(ellipse 120% 90% at 50% 45%, transparent 55%, rgba(0, 0, 0, 0.6));
+  transition: opacity var(--t);
+}
+.is-day .scene-shade {
+  opacity: 0.75;
+}
+
+.scene-grain {
+  position: absolute;
+  inset: -50%;
+  opacity: 0.09;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+  pointer-events: none;
+}
