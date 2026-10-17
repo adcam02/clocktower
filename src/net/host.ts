@@ -3,6 +3,7 @@ import { create } from 'zustand';
 import { st, toPrivate, toPublic, useHost } from '../state/host';
 import type { ClientMessage, HostMessage } from '../state/types';
 import { joinMesh, type Mesh } from './mesh';
+import { useUpdate } from '../lib/version';
 import { hostPeerId, peerDisabled, peerOptions, type LinkStatus } from './peer';
 
 interface HostNet {
@@ -171,6 +172,8 @@ class HostLink {
     }
     if (msg.t === 'hello') {
       meta.playerId = String(msg.playerId).slice(0, 40);
+      // A player on a newer version means this page is out of date.
+      if (msg.v && msg.v > __BUILD__) useUpdate.setState({ available: true });
       meta.sentPublic = meta.sentPrivate = undefined;
       // A refreshed tab replaces its old connection on the same route.
       for (const [other, m] of this.links) {
@@ -238,7 +241,7 @@ class HostLink {
     try {
       if (pubJson !== meta.sentPublic) {
         meta.sentPublic = pubJson;
-        link.send({ t: 'state', s: pub, now: Date.now() });
+        link.send({ t: 'state', s: pub, now: Date.now(), v: __BUILD__ });
       }
       const priv = toPrivate(g, meta.playerId);
       const privJson = JSON.stringify(priv);

@@ -11,6 +11,7 @@ import { MyCharacter, PlayerRail, VoteBar } from './components/PlayerBits';
 import { WakeOverlay } from './components/WakeOverlay';
 import { TownHallCall } from './components/TownHall';
 import { NightLounge } from './components/NightLounge';
+import { UpdateNotice } from './components/UpdateNotice';
 import { Landing } from './components/Landing';
 import { useEffects } from './lib/effects';
 import { clientLink, useClient } from './net/client';
@@ -77,6 +78,7 @@ function Storyteller() {
           <BluffBar />
           <PickBanner />
           <Modals />
+          <UpdateNotice />
           <Toasts />
         </Shell>
       </ViewContext.Provider>
@@ -131,6 +133,7 @@ function Player({ room }: { room: string }) {
           <NightLounge />
           <WakeOverlay />
           <TownHallCall />
+          <UpdateNotice />
           <Toasts />
         </Shell>
       </ViewContext.Provider>

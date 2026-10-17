@@ -12,9 +12,11 @@ interface ClientState {
   priv: PrivateState | null;
   /** The Storyteller's clock minus ours, to keep a shared video in step. */
   clockOffset: number;
+  /** The Storyteller's page is an older version than this one, so newer features won't work. */
+  hostOutdated: boolean;
 }
 
-export const useClient = create<ClientState>(() => ({ status: 'starting', pub: null, priv: null, clockOffset: 0 }));
+export const useClient = create<ClientState>(() => ({ status: 'starting', pub: null, priv: null, clockOffset: 0, hostOutdated: false }));
 
 export function playerId(): string {
   let id = loadJSON<string | null>('clocktower:player-id', null);
@@ -107,7 +109,7 @@ class ClientLink {
       if (this.conn !== conn) return;
       this.lastPong = Date.now();
       this.setPeerState('open');
-      conn.send({ t: 'hello', playerId: playerId() } satisfies ClientMessage);
+      conn.send({ t: 'hello', playerId: playerId(), v: __BUILD__ } satisfies ClientMessage);
     });
     conn.on('data', (raw) => {
       if (this.conn !== conn) return;
@@ -139,7 +141,7 @@ class ClientLink {
         const msg = raw as HostMessage;
         if (msg.t === 'host') {
           this.meshHost = peerId;
-          this.mesh?.send({ t: 'hello', playerId: playerId() } satisfies ClientMessage, peerId);
+          this.mesh?.send({ t: 'hello', playerId: playerId(), v: __BUILD__ } satisfies ClientMessage, peerId);
           this.refresh();
           return;
         }
@@ -166,7 +168,11 @@ class ClientLink {
   private receive(msg: HostMessage) {
     if (msg.t === 'state') {
       setCustomRoles(msg.s.script.custom);
-      useClient.setState(msg.now ? { pub: msg.s, clockOffset: msg.now - Date.now() } : { pub: msg.s });
+      useClient.setState({
+        pub: msg.s,
+        clockOffset: msg.now ? msg.now - Date.now() : useClient.getState().clockOffset,
+        hostOutdated: !msg.v || msg.v < __BUILD__,
+      });
     } else if (msg.t === 'private') {
       useClient.setState({ priv: msg.p });
     }

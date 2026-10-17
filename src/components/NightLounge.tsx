@@ -15,9 +15,11 @@ interface Lounge {
   night: number;
   big: boolean;
   level: number;
+  /** A video this player has just put on, shown straight away while the Storyteller's page shares it. */
+  pending: { videoId: string; list?: string; at: number } | null;
 }
 
-const useLounge = create<Lounge>(() => ({ choice: 'none', night: 0, big: true, level: loadJSON('clocktower:music-level', 0.6) }));
+const useLounge = create<Lounge>(() => ({ choice: 'none', night: 0, big: true, level: loadJSON('clocktower:music-level', 0.6), pending: null }));
 const choose = (choice: Choice) => {
   if (choice === 'music') nightMusic.start();
   else nightMusic.stop();
@@ -29,8 +31,22 @@ export function NightLounge() {
   const view = useView();
   const me = view.seats.find((s) => s.isMe);
   const awake = useClient((s) => Boolean(s.priv?.wake));
-  const { choice, night, big, level } = useLounge();
-  const video = view.nightVideo;
+  const { choice, night, big, level, pending } = useLounge();
+  const offset = useClient((s) => s.clockOffset);
+  const shared = view.nightVideo;
+  // Until the Storyteller's page confirms it, the person who put the video on still sees it.
+  const video: NightVideo | null =
+    shared ?? (pending && me ? { videoId: pending.videoId, list: pending.list, startedAt: pending.at + offset, by: me.id } : null);
+  const [now, setNow] = useState(Date.now());
+  const unshared = Boolean(!shared && pending && now - pending.at > 5000);
+  useEffect(() => {
+    if (!pending || shared) return;
+    const t = setTimeout(() => setNow(Date.now()), 5200);
+    return () => clearTimeout(t);
+  }, [pending, shared]);
+  useEffect(() => {
+    if (shared && useLounge.getState().pending) useLounge.setState({ pending: null });
+  }, [shared]);
   const isNight = view.phase === 'night';
   const seated = Boolean(me);
 
@@ -38,6 +54,7 @@ export function NightLounge() {
   useEffect(() => {
     if (!isNight || !seated) {
       choose('none');
+      useLounge.setState({ pending: null });
       return;
     }
     if (useLounge.getState().night !== view.day) {
@@ -47,10 +64,10 @@ export function NightLounge() {
   }, [isNight, seated, view.day]);
 
   // Someone puts a video on: invite everyone who isn't already watching.
-  const videoKey = video ? `${video.videoId}:${video.startedAt}` : null;
+  const videoKey = shared ? `${shared.videoId}:${shared.startedAt}` : null;
   useEffect(() => {
     if (videoKey && isNight && seated && useLounge.getState().choice !== 'video') useLounge.setState({ choice: 'ask' });
-    if (!videoKey && useLounge.getState().choice === 'video') useLounge.setState({ choice: 'ask' });
+    if (!videoKey && useLounge.getState().choice === 'video' && !useLounge.getState().pending) useLounge.setState({ choice: 'ask' });
   }, [videoKey, isNight, seated]);
 
   useEffect(() => nightMusic.duck(awake), [awake]);
@@ -88,7 +105,7 @@ export function NightLounge() {
           </button>
         </div>
       )}
-      {choice === 'video' && video && <SharedVideo key={`${video.videoId}:${video.startedAt}`} video={video} byName={byName} big={big} awake={awake} />}
+      {choice === 'video' && video && <SharedVideo key={video.videoId} video={video} byName={byName} big={big} awake={awake} unshared={unshared} />}
     </>
   );
 }
@@ -104,6 +121,7 @@ function AskCard({ video, byName }: { video: NightVideo | null; byName: string }
       return;
     }
     saveJSON('clocktower:last-video', link);
+    useLounge.setState({ pending: { videoId: parsed.videoId, list: parsed.list, at: Date.now() } });
     player.video(parsed.videoId, parsed.list);
     choose('video');
   };
@@ -164,7 +182,7 @@ function AskCard({ video, byName }: { video: NightVideo | null; byName: string }
   );
 }
 
-function SharedVideo({ video, byName, big, awake }: { video: NightVideo; byName: string; big: boolean; awake: boolean }) {
+function SharedVideo({ video, byName, big, awake, unshared }: { video: NightVideo; byName: string; big: boolean; awake: boolean; unshared: boolean }) {
   const frame = useRef<HTMLIFrameElement>(null);
   const elapsed = () => (Date.now() + useClient.getState().clockOffset - video.startedAt) / 1000;
   const [src] = useState(() => embedUrl(video.videoId, elapsed(), video.list));
@@ -188,10 +206,22 @@ function SharedVideo({ video, byName, big, awake }: { video: NightVideo; byName:
         <button className="btn small quiet square" title={big ? 'Make it smaller' : 'Make it bigger'} onClick={() => useLounge.setState({ big: !big })}>
           <Icon name={big ? 'shrink' : 'expand'} />
         </button>
-        <button className="btn small quiet" onClick={() => choose('ask')} title="Change video or stop watching">
+        <button
+          className="btn small quiet"
+          onClick={() => {
+            useLounge.setState({ pending: null });
+            choose('ask');
+          }}
+          title="Change video or stop watching"
+        >
           <Icon name="x" /> Close
         </button>
       </header>
+      {unshared && (
+        <p className="lounge-warn">
+          Only you can see this. The Storyteller’s page didn’t pass it on, so ask them to refresh their page (their game is saved), then put it on again.
+        </p>
+      )}
       <div className="lounge-frame">
         <iframe
           ref={frame}

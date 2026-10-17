@@ -14,6 +14,9 @@ import './styles/app.css';
 import './styles/cards.css';
 import './styles/modals.css';
 import { App } from './App';
+import { watchForUpdates } from './lib/version';
+
+watchForUpdates();
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

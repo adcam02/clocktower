@@ -194,14 +194,14 @@ export interface PrivateState {
 // ---------------------------------------------------------------- messages
 
 export type HostMessage =
-  | { t: 'state'; s: PublicState; now?: number }
+  | { t: 'state'; s: PublicState; now?: number; v?: string }
   | { t: 'private'; p: PrivateState }
   | { t: 'pong' }
   | { t: 'host' }
   | { t: 'error'; message: string };
 
 export type ClientMessage =
-  | { t: 'hello'; playerId: string }
+  | { t: 'hello'; playerId: string; v?: string }
   | { t: 'claim'; seatId: string; name: string }
   | { t: 'leave' }
   | { t: 'rename'; name: string }

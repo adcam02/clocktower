@@ -1377,3 +1377,45 @@ button.my-card:hover {
   margin: 10px 6px;
   background: linear-gradient(180deg, transparent, var(--line-strong), transparent);
 }
+
+/* ---------------------------------------------------------------- update notice */
+
+.update-notice {
+  position: absolute;
+  left: 50%;
+  bottom: 18px;
+  z-index: 85;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  max-width: min(560px, calc(100vw - 24px));
+  padding: 8px 8px 8px 16px;
+  border-radius: 14px;
+  border-color: var(--brass);
+  font-size: 15px;
+  animation: fade 0.4s ease;
+}
+.update-notice > svg {
+  width: 20px;
+  height: 20px;
+  flex: none;
+  color: var(--brass-hi);
+}
+.update-notice.warn {
+  border-color: rgba(240, 180, 90, 0.6);
+  padding-right: 16px;
+}
+@media (max-width: 700px) {
+  .mode-player .update-notice {
+    bottom: 72px;
+  }
+}
+.lounge-warn {
+  margin: 0;
+  padding: 8px 14px;
+  background: rgba(150, 90, 20, 0.35);
+  border-top: 1px solid rgba(240, 180, 90, 0.4);
+  font-size: 14px;
+  color: #ffe2b0;
+}
