@@ -11,7 +11,6 @@ export interface Reminder {
 export interface Seat {
   id: string;
   name: string;
-  pronouns: string;
   /** The browser that took this seat. */
   playerId: string | null;
   /** The character the player really has. */
@@ -32,13 +31,13 @@ export interface Nomination {
   nomineeId: string;
   /** Seats with a hand raised. */
   votes: string[];
-  /** Seats the clock hand has passed, whose vote is final. */
+  /** Seats the clock hand has moved past, whose vote is final. */
   locked: string[];
   /** Dead players whose ghost vote this nomination used. */
   spentGhosts: string[];
   /** Voting order: the player after the nominee, clockwise, ending with the nominee. */
   order: string[];
-  /** How many seats the hand has moved through (0 = pointing at the nominee, not started). */
+  /** The seat the hand is on: 0 is the nominee before voting starts, then order[step - 1]. */
   step: number;
   status: NominationStatus;
   countdown: number;
@@ -103,6 +102,16 @@ export interface AwakeState {
   seen: boolean;
 }
 
+/** The Storyteller calling everyone back from their private chats. */
+export interface TownHall {
+  id: string;
+  at: number;
+  /** Bumped by "ring again", which only alerts players who aren't back yet. */
+  ring: number;
+  /** Seats whose player has pressed "I'm back". */
+  back: string[];
+}
+
 export interface GameState {
   v: 1;
   room: string;
@@ -118,6 +127,7 @@ export interface GameState {
   nomination: Nomination | null;
   marked: { seatId: string; votes: number } | null;
   history: VoteRecord[];
+  townHall: TownHall | null;
   awake: Record<string, AwakeState>;
   wakes: WakeMessage[];
   replies: WakeReply[];
@@ -129,7 +139,6 @@ export interface GameState {
 export interface PublicSeat {
   id: string;
   name: string;
-  pronouns: string;
   claimed: boolean;
   connected: boolean;
   dead: boolean;
@@ -151,6 +160,7 @@ export interface PublicState {
   nomination: Nomination | null;
   marked: { seatId: string; votes: number } | null;
   history: VoteRecord[];
+  townHall: TownHall | null;
 }
 
 export interface PrivateState {
@@ -176,11 +186,12 @@ export type HostMessage =
 
 export type ClientMessage =
   | { t: 'hello'; playerId: string }
-  | { t: 'claim'; seatId: string; name: string; pronouns?: string }
+  | { t: 'claim'; seatId: string; name: string }
   | { t: 'leave' }
-  | { t: 'rename'; name: string; pronouns?: string }
+  | { t: 'rename'; name: string }
   | { t: 'vote'; up: boolean }
   | { t: 'ack'; wakeId: string }
   | { t: 'reply'; wakeId: string; seatIds?: string[]; roleIds?: string[]; answer?: boolean }
   | { t: 'sleep' }
+  | { t: 'back'; id: string }
   | { t: 'ping' };

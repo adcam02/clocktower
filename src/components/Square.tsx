@@ -236,6 +236,7 @@ function SeatSpot({ seat, geo, i }: { seat: SeatView; geo: Geometry; i: number }
           roleId={seat.roleId}
           alignment={seat.alignment}
           dead={seat.dead}
+          deadBadge={view.grimoireRevealed}
           blank={blank}
           className={seat.traveller ? 'is-traveller' : ''}
         />
@@ -254,6 +255,11 @@ function SeatSpot({ seat, geo, i }: { seat: SeatView; geo: Geometry; i: number }
       {marked && (
         <span className="seat-mark" title="Marked for execution">
           <Icon name="axe" />
+        </span>
+      )}
+      {st_ && view.townHall && seat.claimed && !view.townHall.back.includes(seat.id) && (
+        <span className="seat-hall" title="Not back in the town hall yet">
+          <Icon name="bell" />
         </span>
       )}
       {st_ && seat.awake && (
@@ -280,7 +286,6 @@ function SeatSpot({ seat, geo, i }: { seat: SeatView; geo: Geometry; i: number }
       <div className="seat-plate">
         {st_ && seat.claimed && <span className={`dot ${seat.connected ? 'on' : ''}`} title={seat.connected ? 'Online' : 'Offline'} />}
         <span className="seat-name">{seat.label}</span>
-        {seat.pronouns && <span className="seat-pronouns">{seat.pronouns}</span>}
         {seat.dead && seat.ghostVote && (
           <span className="ghost-vote" title="Has a ghost vote">
             <Icon name="vote" />

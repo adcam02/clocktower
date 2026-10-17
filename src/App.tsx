@@ -9,6 +9,7 @@ import { BluffBar } from './components/BluffBar';
 import { PickBanner } from './components/PickBanner';
 import { MyCharacter, VoteBar } from './components/PlayerBits';
 import { WakeOverlay } from './components/WakeOverlay';
+import { TownHallCall } from './components/TownHall';
 import { Landing } from './components/Landing';
 import { useEffects } from './lib/effects';
 import { clientLink, useClient } from './net/client';
@@ -126,6 +127,7 @@ function Player({ room }: { room: string }) {
           <VoteBar />
           <Modals />
           <WakeOverlay />
+          <TownHallCall />
           <Toasts />
         </Shell>
       </ViewContext.Provider>

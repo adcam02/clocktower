@@ -1,5 +1,7 @@
-import { getRole } from '../data';
-import { st, useHost } from '../state/host';
+import { genericIcon, getRole } from '../data';
+import { evilInfoStatus } from '../lib/evilInfo';
+import { demonInfo, minionInfo } from '../lib/presets';
+import { seatName, st, useHost } from '../state/host';
 import { ui, useUI } from '../state/ui';
 import { Icon } from './Icon';
 import { Token } from './Token';
@@ -12,6 +14,7 @@ export function BluffBar() {
   if (hidden) return null;
   return (
     <aside className="bluff-bar">
+      <EvilChecklist />
       <div className="bluff-group">
         <span className="eyebrow">Demon bluffs</span>
         <div className="bluff-slots">
@@ -46,5 +49,44 @@ export function BluffBar() {
         </div>
       </div>
     </aside>
+  );
+}
+
+/** A reminder that stays up on the first night until the evil team has been shown each other and the bluffs. */
+function EvilChecklist() {
+  const g = useHost((s) => s.g);
+  const s = evilInfoStatus(g);
+  if (!s.missing) return null;
+  const demon = s.demons.map((d) => seatName(g, d.id)).join(' & ');
+  return (
+    <div className="evil-check surface" role="status">
+      <span className="eyebrow">Don’t forget</span>
+      {!s.minionsShown && (
+        <button
+          className="evil-item"
+          onClick={() => {
+            const p = minionInfo();
+            ui.wake(p.to, p.panels);
+          }}
+        >
+          <img src={genericIcon('minion')} alt="" />
+          <span>Show the Minions their Demon</span>
+          <em>Minion info</em>
+        </button>
+      )}
+      {!s.bluffsShown && (
+        <button
+          className="evil-item"
+          onClick={() => {
+            const p = demonInfo();
+            ui.wake(p.to, p.panels);
+          }}
+        >
+          <img src={genericIcon('demon')} alt="" />
+          <span>Give {demon} {s.bluffsChosen ? 'these' : 'three'} bluffs</span>
+          <em>Demon info</em>
+        </button>
+      )}
+    </div>
   );
 }

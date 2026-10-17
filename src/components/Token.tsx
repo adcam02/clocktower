@@ -27,13 +27,15 @@ interface TokenProps {
   roleId: string | null;
   alignment?: Alignment | null;
   dead?: boolean;
+  /** Mark death with a small skull on the rim instead of a shroud, so the character stays readable. */
+  deadBadge?: boolean;
   /** Show a face-down token when there's no character to show. */
   blank?: 'unknown' | 'empty';
   label?: boolean;
   className?: string;
 }
 
-export const Token = memo(function Token({ roleId, alignment, dead, blank = 'unknown', label = true, className = '' }: TokenProps) {
+export const Token = memo(function Token({ roleId, alignment, dead, deadBadge, blank = 'unknown', label = true, className = '' }: TokenProps) {
   const role = getRole(roleId);
   if (!role) {
     return (
@@ -53,13 +55,25 @@ export const Token = memo(function Token({ roleId, alignment, dead, blank = 'unk
   }
   const name = role.name;
   return (
-    <div className={`token team-${role.team} ${dead ? 'is-dead' : ''} ${className}`}>
+    <div className={`token team-${role.team} ${dead ? (deadBadge ? 'is-dead dead-badged' : 'is-dead') : ''} ${className}`}>
       <img className="token-icon" src={iconUrl(role, alignment)} alt="" draggable={false} loading="lazy" />
       {label && <ArcText className="token-name" text={name} size={fitSize(name, 12.5, 118)} />}
-      {dead && <Shroud />}
+      {dead && (deadBadge ? <DeadBadge /> : <Shroud />)}
     </div>
   );
 });
+
+function DeadBadge() {
+  return (
+    <svg className="dead-badge" viewBox="0 0 24 24" aria-label="Dead">
+      <circle cx="12" cy="12" r="11.5" />
+      <path d="M12 4.6c-3.6 0-5.9 2.5-5.9 5.6 0 1.9.9 3.2 2.3 3.9v2.4h7.2v-2.4c1.4-.7 2.3-2 2.3-3.9 0-3.1-2.3-5.6-5.9-5.6Z" className="dead-skull" />
+      <circle cx="9.6" cy="10.4" r="1.45" className="dead-eye" />
+      <circle cx="14.4" cy="10.4" r="1.45" className="dead-eye" />
+      <path d="M10 16.5v2.2M12 16.5v2.2M14 16.5v2.2" className="dead-teeth" />
+    </svg>
+  );
+}
 
 export function Shroud() {
   return (
@@ -72,8 +86,9 @@ export function Shroud() {
           <stop offset="1" stopColor="#050506" />
         </linearGradient>
       </defs>
-      <path d="M30 -2 L70 -2 L70 58 L50 70 L30 58 Z" fill="url(#shroud-cloth)" />
-      <path d="M36 -2 L36 56 M44 -2 L44 62 M56 -2 L56 62 M64 -2 L64 56" stroke="#000" strokeOpacity="0.45" strokeWidth="1" />
+      <path d="M36 -6 L64 -6 L64 40 L50 49 L36 40 Z" fill="url(#shroud-cloth)" />
+      <path d="M41 -6 L41 40 M47 -6 L47 45 M53 -6 L53 45 M59 -6 L59 40" stroke="#000" strokeOpacity="0.45" strokeWidth="1" />
+      <g transform="translate(50 17) scale(0.72) translate(-50 -33)">
       <g fill="#ece6d6">
         <path d="M50 22 c-7 0 -11 4.6 -11 10.4 c0 3.6 1.7 6 4.4 7.3 V44 h13.2 v-4.3 c2.7-1.3 4.4-3.7 4.4-7.3 C61 26.6 57 22 50 22 Z" />
       </g>
@@ -84,6 +99,7 @@ export function Shroud() {
         <rect x="46.5" y="41" width="1.3" height="3" />
         <rect x="49.4" y="41" width="1.3" height="3" />
         <rect x="52.2" y="41" width="1.3" height="3" />
+      </g>
       </g>
     </svg>
   );

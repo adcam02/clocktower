@@ -188,19 +188,22 @@ class HostLink {
     const p = st.fromPlayer;
     switch (msg.t) {
       case 'claim':
-        p.claim(pid, msg.seatId, String(msg.name ?? ''), msg.pronouns);
+        p.claim(pid, msg.seatId, String(msg.name ?? ''));
         break;
       case 'leave':
         p.leave(pid);
         break;
       case 'rename':
-        p.rename(pid, String(msg.name ?? ''), msg.pronouns);
+        p.rename(pid, String(msg.name ?? ''));
         break;
       case 'vote':
         p.vote(pid, Boolean(msg.up));
         break;
       case 'ack':
         p.ack(pid, msg.wakeId);
+        break;
+      case 'back':
+        p.back(pid, String(msg.id));
         break;
       case 'reply':
         p.reply(pid, msg.wakeId, { seatIds: msg.seatIds, roleIds: msg.roleIds, answer: msg.answer });

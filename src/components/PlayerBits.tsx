@@ -61,12 +61,14 @@ export function VoteBar() {
   const up = n.votes.includes(me.id);
   const locked = n.locked.includes(me.id);
   const canVote = !me.dead || me.ghostVote;
+  const myTurn = n.status !== 'idle' && n.status !== 'countdown' && n.step > 0 && n.order[n.step - 1] === me.id && !locked;
   let note = '';
   if (locked) note = up ? 'Your vote is in.' : 'The hand has passed you.';
   else if (!canVote) note = 'You have used your ghost vote.';
+  else if (myTurn) note = 'The hand is on you. You can still change your mind.';
   else if (me.dead) note = 'Voting uses your one ghost vote.';
   return (
-    <div className="vote-bar surface">
+    <div className={`vote-bar surface ${myTurn ? 'my-turn' : ''}`}>
       <div className="vote-q">
         <span className="vote-ask">
           Execute <b className="blood">{nominee?.label}</b>?

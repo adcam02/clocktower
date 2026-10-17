@@ -3,7 +3,7 @@ import { defaultAlignment, getRole, type Alignment, type Script } from '../data'
 import { useClient } from '../net/client';
 import { useHostNet } from '../net/host';
 import { isTraveller, seatAlignment, useHost } from './host';
-import type { AwakeState, Nomination, Phase, Reminder, VoteRecord } from './types';
+import type { AwakeState, Nomination, Phase, Reminder, TownHall, VoteRecord } from './types';
 import { useUI } from './ui';
 
 export type Mode = 'st' | 'player';
@@ -15,7 +15,6 @@ export interface SeatView {
   index: number;
   name: string;
   label: string;
-  pronouns: string;
   claimed: boolean;
   connected: boolean;
   dead: boolean;
@@ -42,6 +41,7 @@ export interface View {
   nomination: Nomination | null;
   marked: { seatId: string; votes: number } | null;
   history: VoteRecord[];
+  townHall: TownHall | null;
   revealed: boolean;
   grimoireRevealed: boolean;
   mySeatId: string | null;
@@ -65,7 +65,6 @@ export function useStorytellerView(): View {
         index: i,
         name: s.name,
         label: label(s.name, i),
-        pronouns: s.pronouns,
         claimed: Boolean(s.playerId),
         connected: Boolean(s.playerId && online[s.playerId]),
         dead: s.dead,
@@ -82,6 +81,7 @@ export function useStorytellerView(): View {
       nomination: g.nomination,
       marked: g.marked,
       history: g.history,
+      townHall: g.townHall,
       revealed: g.revealed,
       grimoireRevealed: g.grimoireRevealed,
       mySeatId: null,
@@ -109,7 +109,6 @@ export function usePlayerView(): View | null {
           index: i,
           name: s.name,
           label: label(s.name, i),
-          pronouns: s.pronouns,
           claimed: s.claimed,
           connected: s.connected,
           dead: s.dead,
@@ -127,6 +126,7 @@ export function usePlayerView(): View | null {
       nomination: pub.nomination,
       marked: pub.marked,
       history: pub.history,
+      townHall: pub.townHall ?? null,
       revealed: pub.revealed,
       grimoireRevealed: pub.grimoireRevealed,
       mySeatId: priv?.seatId ?? null,

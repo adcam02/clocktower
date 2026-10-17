@@ -16,6 +16,7 @@ export type Modal =
   | { kind: 'journal' }
   | { kind: 'claim'; seatId: string }
   | { kind: 'role'; roleId: string }
+  | { kind: 'dawnCheck' }
   | null;
 
 export type Pick =

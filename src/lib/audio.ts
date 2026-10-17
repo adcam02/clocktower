@@ -103,3 +103,11 @@ export function countBeat(final = false) {
 export function gavel() {
   bell(98, 3.5, 0.22);
 }
+
+/** A quick round on six bells, to call everyone back to the town hall. */
+export function townBells() {
+  const notes = [659.3, 587.3, 523.3, 493.9, 440, 392];
+  for (let round = 0; round < 2; round++) {
+    notes.forEach((f, i) => bell(f, 2.6, 0.075, round * 1.9 + i * 0.27));
+  }
+}

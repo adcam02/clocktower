@@ -1,10 +1,12 @@
 import { editionLogo } from '../data';
 import { useClient } from '../net/client';
 import { useHostNet } from '../net/host';
-import { st } from '../state/host';
+import { hostGame, st } from '../state/host';
+import { evilInfoStatus } from '../lib/evilInfo';
 import { ui, useUI, type Panel } from '../state/ui';
 import { useView } from '../state/view';
 import { Icon, type IconName } from './Icon';
+import { HallButton } from './TownHall';
 
 function ToolButton({ icon, label, onClick, active, badge }: { icon: IconName; label: string; onClick: () => void; active?: boolean; badge?: number }) {
   return (
@@ -40,7 +42,10 @@ function PhaseSwitch() {
       <button className={night ? 'on' : ''} onClick={() => st.setPhase('night')}>
         <Icon name="moon" /> Night
       </button>
-      <button className={!night ? 'on' : ''} onClick={() => st.setPhase('day')}>
+      <button
+        className={!night ? 'on' : ''}
+        onClick={() => (night && evilInfoStatus(hostGame()).missing ? ui.open({ kind: 'dawnCheck' }) : st.setPhase('day'))}
+      >
         <Icon name="sun" /> Day
       </button>
     </div>
@@ -91,6 +96,7 @@ export function TopBar() {
             <ToolButton icon="scroll" label="Night order" active={panel === 'night'} onClick={toggle('night')} />
             <ToolButton icon="bag" label="Bag" onClick={() => ui.open({ kind: 'bag' })} />
             <ToolButton icon="wake" label="Wake" badge={awake} onClick={() => ui.wake(useUI.getState().draft.to)} />
+            <HallButton />
           </>
         )}
         <ToolButton icon="book" label="Characters" active={panel === 'reference'} onClick={toggle('reference')} />

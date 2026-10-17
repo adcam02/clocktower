@@ -131,10 +131,6 @@
   color: var(--text-faint);
   font-style: italic;
 }
-.seat-pronouns {
-  font-size: 0.72em;
-  color: var(--text-dim);
-}
 .seat .dot {
   width: 7px;
   height: 7px;

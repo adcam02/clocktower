@@ -27,7 +27,6 @@ export function blankSeat(): Seat {
   return {
     id: uid(),
     name: '',
-    pronouns: '',
     playerId: null,
     roleId: null,
     shownRoleId: null,
@@ -41,7 +40,7 @@ export function blankSeat(): Seat {
 function freshGame(prev?: GameState, keepPlayers = true): GameState {
   const seats = prev
     ? prev.seats.map((s) =>
-        keepPlayers ? { ...blankSeat(), id: s.id, name: s.name, pronouns: s.pronouns, playerId: s.playerId } : blankSeat(),
+        keepPlayers ? { ...blankSeat(), id: s.id, name: s.name, playerId: s.playerId } : blankSeat(),
       )
     : Array.from({ length: 8 }, blankSeat);
   return {
@@ -59,6 +58,7 @@ function freshGame(prev?: GameState, keepPlayers = true): GameState {
     nomination: null,
     marked: null,
     history: [],
+    townHall: null,
     awake: {},
     wakes: [],
     replies: [],
@@ -72,6 +72,7 @@ function loadGame(): GameState | null {
   if (g.nomination && (g.nomination.status === 'running' || g.nomination.status === 'countdown')) {
     g.nomination.status = g.nomination.step > 0 ? 'paused' : 'idle';
   }
+  g.townHall ??= null;
   setCustomRoles(g.script.custom);
   return g;
 }
@@ -127,7 +128,6 @@ export function toPublic(g: GameState, online: Set<string>): PublicState {
       return {
         id: s.id,
         name: s.name,
-        pronouns: s.pronouns,
         claimed: Boolean(s.playerId),
         connected: Boolean(s.playerId && online.has(s.playerId)),
         dead: s.dead,
@@ -142,6 +142,7 @@ export function toPublic(g: GameState, online: Set<string>): PublicState {
     nomination: g.nomination,
     marked: g.marked,
     history: g.history,
+    townHall: g.townHall,
   };
 }
 
@@ -264,9 +265,10 @@ function runClock() {
       update((g) => {
         const n = g.nomination;
         if (!n || n.status !== 'running') return;
-        n.step += 1;
-        lockSeat(g, n, n.order[n.step - 1]);
+        // The hand has rested on this player for a whole turn, so their vote is final as it moves on.
+        if (n.step >= 1) lockSeat(g, n, n.order[n.step - 1]);
         if (n.step >= n.order.length) n.status = 'done';
+        else n.step += 1;
       });
       runClock();
     }, nom.secondsPerPlayer * 1000);
@@ -321,12 +323,6 @@ export const st = {
     update((g) => {
       const s = seatOf(g, id);
       if (s) s.name = name.trim().slice(0, 24);
-    });
-  },
-  setPronouns(id: string, pronouns: string) {
-    update((g) => {
-      const s = seatOf(g, id);
-      if (s) s.pronouns = pronouns.trim().slice(0, 16);
     });
   },
   swapSeats(a: string, b: string) {
@@ -491,6 +487,7 @@ export const st = {
       g.nomination = null;
       g.marked = null;
       g.nightDone = [];
+      g.townHall = null;
       if (phase === 'day') g.awake = {};
     });
   },
@@ -632,20 +629,31 @@ export const st = {
       else for (const id of seatIds) delete g.awake[id];
     });
   },
+  /** Rings the bell on every player's screen until they say they're back. */
+  callTownHall() {
+    update((g) => {
+      if (g.townHall) {
+        g.townHall.ring += 1;
+        g.townHall.at = Date.now();
+      } else g.townHall = { id: uid(), at: Date.now(), ring: 0, back: [] };
+    });
+  },
+  endTownHall() {
+    update((g) => void (g.townHall = null));
+  },
   revealGrimoire(on: boolean) {
     update((g) => void (g.grimoireRevealed = on));
   },
 
   // things players ask for
   fromPlayer: {
-    claim(playerId: string, seatId: string, name: string, pronouns?: string) {
+    claim(playerId: string, seatId: string, name: string) {
       update((g) => {
         const seat = seatOf(g, seatId);
         if (!seat || (seat.playerId && seat.playerId !== playerId)) return;
         for (const s of g.seats) if (s.playerId === playerId) s.playerId = null;
         seat.playerId = playerId;
         if (name.trim()) seat.name = name.trim().slice(0, 24);
-        if (pronouns !== undefined) seat.pronouns = pronouns.trim().slice(0, 16);
       });
     },
     leave(playerId: string) {
@@ -653,17 +661,22 @@ export const st = {
         for (const s of g.seats) if (s.playerId === playerId) s.playerId = null;
       });
     },
-    rename(playerId: string, name: string, pronouns?: string) {
+    rename(playerId: string, name: string) {
       update((g) => {
         const s = g.seats.find((x) => x.playerId === playerId);
         if (!s) return;
         if (name.trim()) s.name = name.trim().slice(0, 24);
-        if (pronouns !== undefined) s.pronouns = pronouns.trim().slice(0, 16);
       });
     },
     vote(playerId: string, up: boolean) {
       const s = hostGame().seats.find((x) => x.playerId === playerId);
       if (s) st.setVote(s.id, up);
+    },
+    back(playerId: string, id: string) {
+      update((g) => {
+        const s = g.seats.find((x) => x.playerId === playerId);
+        if (s && g.townHall?.id === id && !g.townHall.back.includes(s.id)) g.townHall.back.push(s.id);
+      });
     },
     ack(playerId: string, wakeId: string) {
       update((g) => {

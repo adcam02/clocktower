@@ -192,11 +192,12 @@ export const clientLink = new ClientLink();
 if (import.meta.env.DEV) (window as unknown as { __client: typeof useClient }).__client = useClient;
 
 export const player = {
-  claim: (seatId: string, name: string, pronouns?: string) => clientLink.send({ t: 'claim', seatId, name, pronouns }),
+  claim: (seatId: string, name: string) => clientLink.send({ t: 'claim', seatId, name }),
   leave: () => clientLink.send({ t: 'leave' }),
-  rename: (name: string, pronouns?: string) => clientLink.send({ t: 'rename', name, pronouns }),
+  rename: (name: string) => clientLink.send({ t: 'rename', name }),
   vote: (up: boolean) => clientLink.send({ t: 'vote', up }),
   ack: (wakeId: string) => clientLink.send({ t: 'ack', wakeId }),
+  back: (id: string) => clientLink.send({ t: 'back', id }),
   reply: (wakeId: string, r: { seatIds?: string[]; roleIds?: string[]; answer?: boolean }) =>
     clientLink.send({ t: 'reply', wakeId, ...r }),
 };

@@ -1,7 +1,7 @@
 import { getRole, nightReminder } from '../data';
-import { hostGame } from '../state/host';
+import { hostGame, st } from '../state/host';
 import type { Ask, InfoCard, WakePanel } from '../state/types';
-import { emptyPanel } from '../state/ui';
+import { emptyPanel, ui } from '../state/ui';
 
 const WORDS: Record<string, number> = { a: 1, one: 1, two: 2, three: 3, '1': 1, '2': 2, '3': 3 };
 
@@ -52,7 +52,13 @@ export function minionInfo(): { to: string[]; panels: WakePanel[] } {
 }
 
 export function demonInfo(): { to: string[]; panels: WakePanel[] } {
-  const { demons, minions, bluffs } = evilTeam();
+  let { demons, minions, bluffs } = evilTeam();
+  if (!bluffs.length) {
+    // Never wake the Demon without bluffs to show them.
+    st.randomBluffs();
+    ({ demons, minions, bluffs } = evilTeam());
+    ui.toast('Picked three bluffs for you. Change them at the bottom left before you show them.', 'info');
+  }
   return {
     to: demons,
     panels: [

@@ -58,7 +58,48 @@
 }
 
 .token.is-dead .token-icon {
-  filter: grayscale(1) brightness(0.8) contrast(0.9);
+  filter: grayscale(0.85) brightness(0.85);
+}
+.token.dead-badged,
+.token.dead-badged .token-icon {
+  filter: none;
+}
+.token.dead-badged::after {
+  /* a faint veil over the paper, not the art */
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: radial-gradient(circle, transparent 55%, rgba(10, 10, 16, 0.35));
+  pointer-events: none;
+}
+.dead-badge {
+  /* on the left rim, clear of the execution mark, guesses and the character's name */
+  position: absolute;
+  left: -8%;
+  top: 16%;
+  width: 34%;
+  height: 34%;
+  min-width: 22px;
+  min-height: 22px;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.7));
+  animation: mark-in 0.5s var(--ease-spring);
+  z-index: 2;
+}
+.dead-badge circle:first-child {
+  fill: #0d0d12;
+  stroke: #ece6d6;
+  stroke-width: 1.2;
+}
+.dead-skull {
+  fill: #ece6d6;
+}
+.dead-eye {
+  fill: #0d0d12;
+}
+.dead-teeth {
+  stroke: #0d0d12;
+  stroke-width: 0.9;
 }
 .token.is-dead {
   filter: saturate(0.6);

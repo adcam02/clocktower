@@ -130,7 +130,7 @@ export function SeatMenu({ seat, geo, pt }: { seat: SeatView; geo: Geometry; pt:
 
       <div className="menu-group">
         <Item icon="pencil" onClick={() => ui.open({ kind: 'rename', seatId: seat.id })}>
-          Rename or pronouns
+          Rename
         </Item>
         <Item icon="swap" onClick={() => ui.pick({ kind: 'swap', seatId: seat.id })}>
           Swap seats with…

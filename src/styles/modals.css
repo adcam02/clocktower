@@ -2100,3 +2100,67 @@
   font-size: 13px;
   color: var(--text-dim);
 }
+.setting-on {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: #8fe0a7 !important;
+}
+.setting-on svg {
+  width: 16px;
+  height: 16px;
+}
+.setting-off {
+  max-width: 160px;
+  text-align: right;
+}
+
+.night-state {
+  padding: 0 8px;
+  border-radius: 999px;
+  font-size: 12.5px;
+}
+.night-state.ok {
+  background: rgba(111, 220, 140, 0.14);
+  color: #8fe0a7;
+}
+.night-state.todo {
+  background: rgba(200, 38, 59, 0.22);
+  color: var(--evil-hi);
+}
+
+.dawn-check {
+  display: grid;
+  gap: 12px;
+}
+.dawn-item {
+  display: grid;
+  grid-template-columns: 40px minmax(0, 1fr);
+  align-items: center;
+  gap: 4px 12px;
+  padding: 12px;
+  border-radius: 12px;
+  background: rgba(200, 38, 59, 0.1);
+  border: 1px solid rgba(255, 138, 148, 0.35);
+}
+.dawn-item img {
+  width: 40px;
+  height: 40px;
+  object-fit: contain;
+}
+.dawn-item > div {
+  display: grid;
+}
+.dawn-item strong {
+  font-weight: 400;
+  font-size: 17px;
+}
+.dawn-item span {
+  font-size: 13.5px;
+  color: var(--text-dim);
+}
+.dawn-item .btn {
+  grid-column: 2;
+  justify-self: start;
+  margin-top: 6px;
+}

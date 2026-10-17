@@ -741,3 +741,234 @@ button.my-card:hover {
 .app:has(.vote-bar) .toasts {
   bottom: 96px;
 }
+.vote-bar.my-turn {
+  border-color: var(--brass-hi);
+  box-shadow:
+    var(--shadow-lg),
+    0 0 0 2px rgba(240, 212, 143, 0.5),
+    0 0 40px rgba(240, 212, 143, 0.35);
+  animation: rise 0.4s var(--ease-out), turn-glow 1.2s ease-in-out infinite;
+}
+.vote-bar.my-turn .vote-q span:not(.vote-ask) {
+  color: var(--brass-hi);
+}
+@keyframes turn-glow {
+  50% {
+    box-shadow:
+      var(--shadow-lg),
+      0 0 0 3px rgba(240, 212, 143, 0.8),
+      0 0 60px rgba(240, 212, 143, 0.5);
+  }
+}
+
+/* ---------------------------------------------------------------- town hall */
+
+.hall-wrap {
+  position: relative;
+}
+.tool.calling svg {
+  animation: ring 1s ease-in-out infinite;
+  transform-origin: 50% 10%;
+}
+@keyframes ring {
+  0%,
+  100% {
+    transform: rotate(0);
+  }
+  20% {
+    transform: rotate(16deg);
+  }
+  40% {
+    transform: rotate(-14deg);
+  }
+  60% {
+    transform: rotate(8deg);
+  }
+  80% {
+    transform: rotate(-4deg);
+  }
+}
+.hall-pop {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 8px);
+  z-index: 30;
+  display: grid;
+  gap: 4px;
+  width: 280px;
+  padding: 14px 16px;
+  animation: pop 0.18s var(--ease-out);
+}
+.hall-pop strong {
+  font-family: var(--font-caps);
+  font-weight: 400;
+  font-size: 18px;
+}
+.hall-pop > span {
+  color: var(--brass-hi);
+  font-size: 14px;
+}
+.hall-pop p {
+  margin: 4px 0 0;
+  font-size: 14px;
+  color: var(--text-dim);
+}
+.hall-pop b {
+  font-weight: 400;
+  color: var(--text);
+}
+.hall-actions {
+  display: flex;
+  gap: 6px;
+  margin-top: 8px;
+}
+.seat-hall {
+  position: absolute;
+  left: calc(var(--t) * 0.5 - 22px);
+  top: calc(var(--t) * -0.5 - 6px);
+  width: 28px;
+  height: 28px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: #f0d48f;
+  color: #2a1d12;
+  box-shadow:
+    0 0 0 2px #2a1d12,
+    0 0 16px rgba(240, 212, 143, 0.8);
+  z-index: 3;
+}
+.seat-hall svg {
+  width: 17px;
+  height: 17px;
+  animation: ring 1.2s ease-in-out infinite;
+  transform-origin: 50% 10%;
+}
+
+.hall-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 72;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  background: radial-gradient(ellipse at 50% 40%, rgba(80, 55, 20, 0.45), rgba(2, 2, 6, 0.92));
+  backdrop-filter: blur(5px);
+  animation: veil 0.6s ease both;
+}
+.hall-card {
+  display: grid;
+  justify-items: center;
+  gap: 8px;
+  max-width: 440px;
+  text-align: center;
+}
+.hall-card h2 {
+  margin: 0;
+  font-family: var(--font-black);
+  font-weight: 400;
+  font-size: clamp(44px, 9vw, 72px);
+  line-height: 1;
+  color: var(--parchment);
+  text-shadow: 0 0 50px rgba(240, 212, 143, 0.4);
+}
+.hall-card p {
+  margin: 0 0 10px;
+  font-size: 18px;
+  color: var(--text-dim);
+}
+.bell-art {
+  width: 150px;
+  height: 165px;
+  overflow: visible;
+  filter: drop-shadow(0 10px 30px rgba(240, 212, 143, 0.35));
+}
+.bell-swing {
+  transform-origin: 50px 10px;
+  animation: swing 1.4s ease-in-out infinite;
+}
+.bell-clapper {
+  transform-origin: 50px 60px;
+  animation: clap 1.4s ease-in-out infinite;
+}
+@keyframes swing {
+  0%,
+  100% {
+    transform: rotate(-16deg);
+  }
+  50% {
+    transform: rotate(16deg);
+  }
+}
+@keyframes clap {
+  0%,
+  100% {
+    transform: rotate(10deg);
+  }
+  50% {
+    transform: rotate(-10deg);
+  }
+}
+
+/* ---------------------------------------------------------------- first-night evil info reminder */
+
+.evil-check {
+  display: grid;
+  gap: 4px;
+  width: 260px;
+  padding: 10px 10px 8px;
+  border-color: rgba(255, 138, 148, 0.55);
+  pointer-events: auto;
+  animation: evil-pulse 2.4s ease-in-out infinite;
+}
+.evil-check .eyebrow {
+  padding-left: 4px;
+  color: var(--evil-hi);
+}
+@keyframes evil-pulse {
+  50% {
+    box-shadow:
+      var(--shadow-lg),
+      0 0 0 2px rgba(255, 138, 148, 0.35),
+      0 0 28px rgba(200, 38, 59, 0.4);
+  }
+}
+.evil-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 6px;
+  border-radius: 9px;
+  text-align: left;
+  font-size: 14.5px;
+  line-height: 1.2;
+  transition: background 0.15s;
+}
+.evil-item:hover {
+  background: rgba(200, 38, 59, 0.18);
+}
+.evil-item img {
+  width: 30px;
+  height: 30px;
+  object-fit: contain;
+  flex: none;
+}
+.evil-item span {
+  flex: 1;
+}
+.evil-item em {
+  font-style: normal;
+  font-family: var(--font-caps);
+  font-size: 12.5px;
+  color: var(--brass-hi);
+  white-space: nowrap;
+}
+@media (max-width: 700px) {
+  .evil-check {
+    position: fixed;
+    left: 8px;
+    right: 8px;
+    bottom: 76px;
+    width: auto;
+  }
+}

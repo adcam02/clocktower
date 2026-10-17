@@ -6,6 +6,7 @@ import type { WakeMessage, WakeReply } from '../state/types';
 import { useView } from '../state/view';
 import { CharacterGrid } from './CharacterGrid';
 import { Icon } from './Icon';
+import { askForNotifications } from '../lib/notify';
 import { askText, PanelView } from './PanelView';
 import { RichText } from './RichText';
 import { Token } from './Token';
@@ -39,7 +40,13 @@ export function WakeOverlay() {
                   <Icon name="check" /> The Storyteller knows you’ve seen this
                 </span>
               ) : (
-                <button className="btn primary big" onClick={() => player.ack(wake.id)}>
+                <button
+                  className="btn primary big"
+                  onClick={() => {
+                    player.ack(wake.id);
+                    askForNotifications();
+                  }}
+                >
                   <Icon name="check" /> Got it
                 </button>
               )}

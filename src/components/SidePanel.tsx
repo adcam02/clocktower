@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { editionLogo, getRole, jinxesFor, nightOrderList, nightReminder, NIGHT_SPECIALS, rolesByTeam, TEAM_LABEL, TEAMS, genericIcon } from '../data';
 import { demonInfo, minionInfo, presetFor } from '../lib/presets';
+import { evilInfoStatus } from '../lib/evilInfo';
 import { seatName, seatsWithRole, st, useHost } from '../state/host';
 import { ui, useUI, type Panel } from '../state/ui';
 import { useView } from '../state/view';
@@ -58,6 +59,7 @@ function NightOrderList() {
   const list = nightOrderList(k, g.script);
   const players = g.seats.length;
   const awake = Object.keys(g.awake).length;
+  const evil = evilInfoStatus(g);
 
   const rows = list
     .map((id) => {
@@ -146,6 +148,12 @@ function NightOrderList() {
                     </span>
                   ))}
                   {few && <span className="night-who">7+ players only</span>}
+                  {!few && k === 'first' && row.id === 'minioninfo' && evil.minions.length > 0 && (
+                    <span className={`night-state ${evil.minionsShown ? 'ok' : 'todo'}`}>{evil.minionsShown ? 'Shown' : 'Not shown yet'}</span>
+                  )}
+                  {!few && k === 'first' && row.id === 'demoninfo' && evil.demons.length > 0 && (
+                    <span className={`night-state ${evil.bluffsShown ? 'ok' : 'todo'}`}>{evil.bluffsShown ? 'Bluffs shown' : 'Bluffs not shown yet'}</span>
+                  )}
                 </div>
                 {text && (
                   <p>

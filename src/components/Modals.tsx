@@ -1,8 +1,8 @@
 import { useMemo, useState } from 'react';
 import { go } from '../App';
-import { ALL_ROLES, defaultAlignment, getRole, jinxesFor, nightReminder, TEAM_SINGULAR, rolesOfTeam } from '../data';
+import { ALL_ROLES, defaultAlignment, genericIcon, getRole, jinxesFor, nightReminder, TEAM_SINGULAR, rolesOfTeam } from '../data';
 import { player, useClient } from '../net/client';
-import { NEEDS_SHOWN, st, useHost } from '../state/host';
+import { NEEDS_SHOWN, seatName, st, useHost } from '../state/host';
 import { notes } from '../state/notes';
 import { ui, useUI } from '../state/ui';
 import { useView } from '../state/view';
@@ -12,6 +12,10 @@ import { Icon } from './Icon';
 import { Modal } from './Modal';
 import { PanelView } from './PanelView';
 import { RichText } from './RichText';
+import { evilInfoStatus } from '../lib/evilInfo';
+import { demonInfo, minionInfo } from '../lib/presets';
+import { joinNames } from '../lib/util';
+import { askForNotifications, notificationsSupported } from '../lib/notify';
 import { ScriptModal } from './ScriptPicker';
 import { ReminderToken, Token } from './Token';
 import { WakeComposer } from './WakeComposer';
@@ -46,6 +50,8 @@ export function Modals() {
       return <BagModal />;
     case 'wake':
       return <WakeComposer />;
+    case 'dawnCheck':
+      return <DawnCheck />;
   }
 }
 
@@ -247,13 +253,10 @@ function RenameModal({ seatId }: { seatId: string }) {
   const view = useView();
   const seat = view.seats.find((s) => s.id === seatId);
   const [name, setName] = useState(seat?.name ?? '');
-  const [pronouns, setPronouns] = useState(seat?.pronouns ?? '');
   if (!seat) return null;
   const save = () => {
-    if (view.mode === 'st') {
-      st.renameSeat(seatId, name);
-      st.setPronouns(seatId, pronouns);
-    } else player.rename(name, pronouns);
+    if (view.mode === 'st') st.renameSeat(seatId, name);
+    else player.rename(name);
     ui.close();
   };
   return (
@@ -269,10 +272,6 @@ function RenameModal({ seatId }: { seatId: string }) {
           <span>Name</span>
           <input className="input" value={name} onChange={(e) => setName(e.target.value)} maxLength={24} autoFocus />
         </label>
-        <label className="field">
-          <span>Pronouns (optional)</span>
-          <input className="input" value={pronouns} onChange={(e) => setPronouns(e.target.value)} maxLength={16} placeholder="they/them" />
-        </label>
         <button className="btn primary">Save</button>
       </form>
     </Modal>
@@ -283,7 +282,6 @@ function ClaimModal({ seatId }: { seatId: string }) {
   const view = useView();
   const seat = view.seats.find((s) => s.id === seatId);
   const [name, setName] = useState(seat?.name || localStorage.getItem('clocktower:name') || '');
-  const [pronouns, setPronouns] = useState(localStorage.getItem('clocktower:pronouns') || '');
   if (!seat) return null;
   return (
     <Modal title={`Sit in seat ${seat.index + 1}`} eyebrow={view.script.name} size="sm">
@@ -294,21 +292,17 @@ function ClaimModal({ seatId }: { seatId: string }) {
           if (!name.trim()) return;
           try {
             localStorage.setItem('clocktower:name', name.trim());
-            localStorage.setItem('clocktower:pronouns', pronouns.trim());
           } catch {
             /* fine */
           }
-          player.claim(seatId, name, pronouns);
+          player.claim(seatId, name);
+          askForNotifications();
           ui.close();
         }}
       >
         <label className="field">
           <span>Your name</span>
           <input className="input" value={name} onChange={(e) => setName(e.target.value)} maxLength={24} autoFocus placeholder="As everyone knows you on Discord" />
-        </label>
-        <label className="field">
-          <span>Pronouns (optional)</span>
-          <input className="input" value={pronouns} onChange={(e) => setPronouns(e.target.value)} maxLength={16} placeholder="they/them" />
         </label>
         <button className="btn primary big" disabled={!name.trim()}>
           Take this seat
@@ -492,6 +486,25 @@ function PlayerSettings() {
             </div>
           </>
         )}
+        {notificationsSupported() && (
+          <div className="setting">
+            <div>
+              <strong>Notifications</strong>
+              <span>A pop-up when you’re woken or called back, even while you’re in Discord</span>
+            </div>
+            {Notification.permission === 'granted' ? (
+              <span className="setting-on">
+                <Icon name="check" /> On
+              </span>
+            ) : Notification.permission === 'denied' ? (
+              <span className="setting-off">Blocked in your browser’s site settings</span>
+            ) : (
+              <button className="btn" onClick={() => (askForNotifications(), ui.close())}>
+                Turn on
+              </button>
+            )}
+          </div>
+        )}
         <div className="setting">
           <div>
             <strong>Your guesses</strong>
@@ -593,6 +606,75 @@ function RoleModal({ roleId }: { roleId: string }) {
           </div>
         )}
         {view.mode === 'st' && NEEDS_SHOWN.has(roleId) && <p className="role-note">This player is told they are a different character. Set it from their seat.</p>}
+      </div>
+    </Modal>
+  );
+}
+
+const haveOrHas = (n: number) => (n === 1 ? 'hasn’t' : 'haven’t');
+
+/** Stops the first night ending before the evil team has its information. */
+function DawnCheck() {
+  const g = useHost((s) => s.g);
+  const s = evilInfoStatus(g);
+  const names = (list: { id: string }[]) => joinNames(list.map((x) => seatName(g, x.id)));
+  const toDay = () => {
+    st.setPhase('day');
+    ui.close();
+  };
+  return (
+    <Modal
+      title="Before the sun rises"
+      eyebrow="Night 1"
+      size="sm"
+      footer={
+        <button className={`btn ${s.missing ? 'quiet' : 'primary'}`} onClick={toDay}>
+          <Icon name="sun" /> {s.missing ? 'Go to day anyway' : 'Go to day'}
+        </button>
+      }
+    >
+      <div className="dawn-check">
+        {!s.minionsShown && (
+          <div className="dawn-item">
+            <img src={genericIcon('minion')} alt="" />
+            <div>
+              <strong>
+                {names(s.minions)} {haveOrHas(s.minions.length)} been shown the Demon
+              </strong>
+              <span>Minions learn who the Demon is, and who the other Minions are.</span>
+            </div>
+            <button
+              className="btn"
+              onClick={() => {
+                const p = minionInfo();
+                ui.wake(p.to, p.panels);
+              }}
+            >
+              Minion info
+            </button>
+          </div>
+        )}
+        {!s.bluffsShown && (
+          <div className="dawn-item">
+            <img src={genericIcon('demon')} alt="" />
+            <div>
+              <strong>
+                {names(s.demons)} {haveOrHas(s.demons.length)} been shown their bluffs
+              </strong>
+              <span>The Demon learns their Minions and three good characters that aren’t in play.</span>
+            </div>
+            <button
+              className="btn primary"
+              onClick={() => {
+                const p = demonInfo();
+                ui.wake(p.to, p.panels);
+              }}
+            >
+              Demon info
+            </button>
+          </div>
+        )}
+        {!s.missing && <p className="char-empty">The evil team has everything it needs.</p>}
       </div>
     </Modal>
   );

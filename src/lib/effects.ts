@@ -4,7 +4,8 @@ import { seatName, useHost } from '../state/host';
 import { ui } from '../state/ui';
 import type { View } from '../state/view';
 import { getRole } from '../data';
-import { countBeat, dawn, gavel, nightfall, primeAudio, tick, wakeChime } from './audio';
+import { countBeat, dawn, gavel, nightfall, primeAudio, tick, townBells, wakeChime } from './audio';
+import { notify } from './notify';
 
 /** Sounds, banners and notices that follow from changes in the game. */
 export function useEffects(view: View | null) {
@@ -51,27 +52,48 @@ export function useEffects(view: View | null) {
   // A player being woken.
   useEffect(() => {
     if (view?.mode !== 'player') return;
-    if (wakeId && wakeId !== lastWake.current) wakeChime();
+    if (wakeId && wakeId !== lastWake.current) {
+      wakeChime();
+      notify('You are awake', 'The Storyteller is showing you something. Open the Grimoire.', 'wake');
+    }
     lastWake.current = wakeId;
   }, [wakeId, view?.mode]);
+
+  // A player being called back to the town hall. The bells ring again a couple of times if they don't answer.
+  const me = view?.seats.find((s) => s.isMe);
+  const call = view?.mode === 'player' ? view.townHall : null;
+  const called = Boolean(call && me && !call.back.includes(me.id));
+  const callKey = called && call ? `${call.id}:${call.ring}` : null;
+  useEffect(() => {
+    if (!callKey) return;
+    townBells();
+    notify('Back to the town hall!', 'The Storyteller is calling everyone back to the main channel.', 'hall');
+    let rings = 0;
+    const t = setInterval(() => {
+      if (++rings > 2) return clearInterval(t);
+      townBells();
+    }, 15000);
+    return () => clearInterval(t);
+  }, [callKey]);
 
   useEffect(() => {
     if (view?.mode !== 'player') return;
     const base = `Room ${view.room} · The Grimoire`;
-    if (!wakeId || wakeSeen) {
+    const alert = called ? '🔔 Back to the town hall!' : wakeId && !wakeSeen ? '👁 You are awake' : null;
+    if (!alert) {
       document.title = base;
       return;
     }
     let on = true;
     const t = setInterval(() => {
-      document.title = on ? '👁 You are awake' : base;
+      document.title = on ? alert : base;
       on = !on;
     }, 900);
     return () => {
       clearInterval(t);
       document.title = base;
     };
-  }, [wakeId, wakeSeen, view?.mode, view?.room]);
+  }, [wakeId, wakeSeen, called, view?.mode, view?.room]);
 
   // The Storyteller hearing back from a player.
   useEffect(() => {

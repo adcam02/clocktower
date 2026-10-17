@@ -96,7 +96,7 @@ function Nomination() {
           {votes === 1 ? 'vote' : 'votes'} in favour <span className="nom-majority">· majority is {majority}</span>
         </span>
       </div>
-      {n.status === 'running' && <div className="nom-status">The hand moves to {name(handOn)}…</div>}
+      {n.status === 'running' && <div className="nom-status">{n.step === 0 ? 'The hand is about to move…' : `The hand is on ${name(handOn)}`}</div>}
       {n.status === 'paused' && <div className="nom-status">Voting paused</div>}
       {n.status === 'idle' && !isST && <div className="nom-status">Raise your hand to vote. Voting starts soon.</div>}
       {v && <div className={`nom-verdict ${v.tone}`}>{v.text}</div>}
